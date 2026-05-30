@@ -1,0 +1,33 @@
+{% if not logs %}
+    <div class="text-center py-12" style="color: var(--text-muted);">
+        <div class="text-4xl mb-3">📭</div>
+        <p>该时段暂无动态</p>
+    </div>
+{% else %}
+    {% set ns = namespace(current_date=none) %}
+    {% for log in logs %}
+        {% if log.log_date != ns.current_date %}
+            {% set ns.current_date = log.log_date %}
+            <div class="text-xs font-medium mt-4 mb-2" style="color: var(--text-secondary);">
+                {% if not loop.first %}<hr class="mb-2" style="border: none; border-top: 1px solid rgba(0,0,0,0.04);">{% endif %}
+                📅 {{ log.log_date.strftime('%Y-%m-%d') }}
+                {% if log.log_date == now.date() %}<span class="accent-text font-semibold">（今天）</span>{% endif %}
+            </div>
+        {% endif %}
+        <div class="glass-card p-3 mb-2 flex items-start gap-3">
+            <span class="text-sm mt-0.5">
+                {% if log.action == "create_target" or log.action == "create_habit" %}➕
+                {% elif log.action == "complete_target" %}🏁
+                {% elif log.action == "complete_milestone" %}✅
+                {% elif log.action == "checkin_habit" %}🔔
+                {% elif log.action == "uncheckin_habit" %}↩️
+                {% else %}📌
+                {% endif %}
+            </span>
+            <div class="flex-1 min-w-0">
+                <p class="text-sm" style="color: var(--text-primary)">{{ log.description }}</p>
+                <p class="text-xs mt-0.5" style="color: var(--text-muted)">{{ log.timestamp.strftime('%H:%M') }}</p>
+            </div>
+        </div>
+    {% endfor %}
+{% endif %}

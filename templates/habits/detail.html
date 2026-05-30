@@ -1,0 +1,52 @@
+{% extends "layout.html" %}
+{% block title %}{{ habit.name }} - Daily Planner{% endblock %}
+{% block content %}
+<div class="max-w-3xl mx-auto">
+    <div class="flex items-center gap-2 mb-4">
+        <a href="/habits" style="color: var(--text-muted)" class="hover:opacity-70">&larr; 习惯列表</a>
+    </div>
+
+    <div class="glass-card p-6 mb-4">
+        <div class="flex items-start justify-between">
+            <div class="flex items-center gap-3">
+                <span class="text-3xl">{{ habit.icon }}</span>
+                <div>
+                    <h1 class="text-xl font-bold" style="color: var(--text-primary)">{{ habit.name }}</h1>
+                    {% if streak > 0 %}
+                        <p class="text-sm font-medium" style="color: #ea580c;">🔥 连续打卡 {{ streak }} 天</p>
+                    {% else %}
+                        <p class="text-sm" style="color: var(--text-muted)">今天还没打卡</p>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="flex gap-2">
+                <a href="/habits/{{ habit.id }}/edit"
+                   class="px-3 py-1.5 rounded-lg text-sm transition-colors"
+                   style="background: rgba(0,0,0,0.04); color: var(--text-secondary);">
+                    编辑
+                </a>
+                <button hx-delete="/api/habits/{{ habit.id }}"
+                        hx-confirm="确定删除这个习惯吗？"
+                        hx-on::after-request="window.location.href='/habits'"
+                        class="px-3 py-1.5 rounded-lg text-sm transition-colors"
+                        style="background: #fef2f2; color: #dc2626;">
+                    删除
+                </button>
+            </div>
+        </div>
+
+        {% if habit.description %}
+            <p class="text-sm mt-3" style="color: var(--text-muted)">{{ habit.description }}</p>
+        {% endif %}
+        <p class="text-xs mt-2" style="color: var(--text-muted)">频率: {{ "每日" if habit.frequency == "daily" else "每周" }}</p>
+    </div>
+
+    <!-- History calendar -->
+    <div class="glass-card p-6">
+        <h2 class="text-sm font-medium mb-4" style="color: var(--text-primary)">打卡记录（近30天）</h2>
+        <div id="habit-history">
+            {% include "habits/history_calendar.html" %}
+        </div>
+    </div>
+</div>
+{% endblock %}

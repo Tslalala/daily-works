@@ -1,0 +1,120 @@
+{% extends "layout.html" %}
+{% block title %}{{ "编辑目标" if target else "新建目标" }} - Daily Planner{% endblock %}
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <div class="flex items-center gap-2 mb-6">
+        <a href="/targets" style="color: var(--text-muted)" class="hover:opacity-70">&larr; 返回</a>
+        <h1 class="text-xl font-bold" style="color: var(--text-primary)">{{ "编辑目标" if target else "新建目标" }}</h1>
+    </div>
+
+    <div class="glass-card p-6">
+        {# AI 建议按钮 #}
+        <div id="ai-btn-area" class="mb-4">
+            <button type="button"
+                    hx-post="/api/ai/suggest-target"
+                    hx-include="#target-title, #target-desc"
+                    hx-target="#ai-suggestion-area"
+                    hx-indicator="#ai-loading"
+                    {% if target %}hx-vals='{"target_id":"{{ target.id }}"}'{% endif %}
+                    class="btn-primary inline-flex items-center gap-1"
+                    style="background: linear-gradient(135deg, var(--primary), var(--primary-dark));">
+                🤖 AI 智能建议
+            </button>
+            <span class="text-xs ml-2" style="color: var(--text-muted)">需要先在 ⚙️ 设置中配置 API Key</span>
+            <span id="ai-loading" class="htmx-indicator text-sm ml-2" style="color: var(--text-muted)">
+                <span class="inline-block animate-pulse">正在分析你的目标...</span>
+            </span>
+        </div>
+
+        <div id="ai-suggestion-area"></div>
+
+        {% if not target %}
+        <form id="target-form" method="post" action="/api/targets" class="space-y-4">
+        {% else %}
+        <form id="target-form"
+              hx-put="{{ '/api/targets/' ~ target.id }}"
+              hx-swap="none"
+              hx-on::after-request="if(event.detail.successful && event.detail.elt === this) setTimeout(() => window.location.href='/targets', 800)"
+              class="space-y-4">
+        {% endif %}
+
+            {% if target %}
+                <input type="hidden" name="_method" value="put">
+            {% endif %}
+
+            <div>
+                <label class="block text-sm font-medium mb-1" style="color: var(--text-primary)">目标名称 *</label>
+                <input id="target-title" type="text" name="title" required maxlength="200"
+                       value="{{ target.title if target else '' }}"
+                       class="w-full px-3 py-2 border rounded-lg text-sm outline-none"
+                       style="border-color: #e2e8f0; background: rgba(255,255,255,0.5);"
+                       placeholder="">
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium mb-1" style="color: var(--text-primary)">描述（可选）</label>
+                <textarea id="target-desc" name="description" rows="3"
+                          class="w-full px-3 py-2 border rounded-lg text-sm outline-none resize-none"
+                          style="border-color: #e2e8f0; background: rgba(255,255,255,0.5);"
+                          placeholder="详细描述你的目标...">{{ target.description if target else '' }}</textarea>
+            </div>
+
+            <hr style="border-color: rgba(0,0,0,0.06);">
+
+            <div>
+                <label class="block text-sm font-medium mb-1" style="color: var(--text-primary)">目标类型</label>
+                <div class="flex gap-3" x-data="{ type: '{{ target.target_type if target else "short_term" }}' }">
+                    <label class="flex items-center gap-1.5 cursor-pointer" @click="type = 'deadline'">
+                        <input type="radio" name="target_type" value="deadline"
+                               {% if target and target.target_type == "deadline" %}checked{% endif %}
+                               x-model="type">
+                        <span class="text-sm" style="color: var(--text-primary)">有期限</span>
+                    </label>
+                    <label class="flex items-center gap-1.5 cursor-pointer" @click="type = 'short_term'">
+                        <input type="radio" name="target_type" value="short_term"
+                               {% if target and target.target_type == "short_term" %}checked{% endif %}
+                               x-model="type">
+                        <span class="text-sm" style="color: var(--text-primary)">短期</span>
+                    </label>
+                    <label class="flex items-center gap-1.5 cursor-pointer" @click="type = 'long_term'">
+                        <input type="radio" name="target_type" value="long_term"
+                               {% if target and target.target_type == "long_term" %}checked{% endif %}
+                               x-model="type">
+                        <span class="text-sm" style="color: var(--text-primary)">长期</span>
+                    </label>
+                </div>
+            </div>
+
+            <div x-show="type === 'deadline'" x-transition>
+                <label class="block text-sm font-medium mb-1" style="color: var(--text-primary)">截止日期</label>
+                <input type="datetime-local" name="deadline"
+                       value="{{ target.deadline.strftime('%Y-%m-%dT%H:%M') if target and target.deadline else '' }}"
+                       class="w-full px-3 py-2 border rounded-lg text-sm outline-none"
+                       style="border-color: #e2e8f0; background: rgba(255,255,255,0.5);">
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium mb-1" style="color: var(--text-primary)">优先级</label>
+                <select name="priority"
+                        class="w-full px-3 py-2 border rounded-lg text-sm outline-none"
+                        style="border-color: #e2e8f0; background: rgba(255,255,255,0.5);">
+                    <option value="1" {% if target and target.priority == 1 %}selected{% endif %}>高优先级</option>
+                    <option value="2" {% if target and target.priority == 2 or not target %}selected{% endif %}>中优先级</option>
+                    <option value="3" {% if target and target.priority == 3 %}selected{% endif %}>低优先级</option>
+                </select>
+            </div>
+
+            <div class="flex gap-3 pt-2">
+                <button type="submit" class="btn-primary">
+                    {{ "保存修改" if target else "创建目标" }}
+                </button>
+                <a href="/targets"
+                   class="px-4 py-2 rounded-lg text-sm transition-colors"
+                   style="background: rgba(0,0,0,0.04); color: var(--text-secondary);">
+                    取消
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

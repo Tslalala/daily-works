@@ -1,0 +1,68 @@
+{% extends "layout.html" %}
+{% block title %}{{ "编辑习惯" if habit else "新建习惯" }}{% endblock %}
+{% block content %}
+<div class="max-w-lg mx-auto">
+    <div class="flex items-center gap-2 mb-6">
+        <a href="/habits" style="color: var(--text-muted)" class="hover:opacity-70">&larr; 返回</a>
+        <h1 class="text-xl font-bold" style="color: var(--text-primary)">{{ "编辑习惯" if habit else "新建习惯" }}</h1>
+    </div>
+
+    <div class="glass-card p-6">
+        {% if not habit %}
+            <form method="post" action="/api/habits" class="space-y-4">
+        {% else %}
+            <form hx-put="{{ '/api/habits/' ~ habit.id }}"
+                  hx-swap="none"
+                  class="space-y-4">
+        {% endif %}
+
+            <div>
+                <label class="block text-sm font-medium mb-1" style="color: var(--text-primary)">习惯名称 *</label>
+                <input type="text" name="name" required maxlength="200"
+                       value="{{ habit.name if habit else '' }}"
+                       class="w-full px-3 py-2 border rounded-lg text-sm outline-none"
+                       style="border-color: #e2e8f0; background: rgba(255,255,255,0.5);"
+                       placeholder="">
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium mb-1" style="color: var(--text-primary)">图标（Emoji）</label>
+                <input type="text" name="icon" maxlength="10"
+                       value="{{ habit.icon if habit else '📌' }}"
+                       class="w-full px-3 py-2 border rounded-lg text-sm outline-none"
+                       style="border-color: #e2e8f0; background: rgba(255,255,255,0.5);"
+                       placeholder="💪 📖 🧘 🏃">
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium mb-1" style="color: var(--text-primary)">频率</label>
+                <select name="frequency"
+                        class="w-full px-3 py-2 border rounded-lg text-sm outline-none"
+                        style="border-color: #e2e8f0; background: rgba(255,255,255,0.5);">
+                    <option value="daily" {% if habit and habit.frequency == 'daily' %}selected{% endif %}>每日</option>
+                    <option value="weekly" {% if habit and habit.frequency == 'weekly' %}selected{% endif %}>每周</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium mb-1" style="color: var(--text-primary)">描述（可选）</label>
+                <textarea name="description" rows="2"
+                          class="w-full px-3 py-2 border rounded-lg text-sm outline-none resize-none"
+                          style="border-color: #e2e8f0; background: rgba(255,255,255,0.5);"
+                          placeholder="习惯描述...">{{ habit.description if habit else '' }}</textarea>
+            </div>
+
+            <div class="flex gap-3 pt-2">
+                <button type="submit" class="btn-primary">
+                    {{ "保存修改" if habit else "创建习惯" }}
+                </button>
+                <a href="/habits"
+                   class="px-4 py-2 rounded-lg text-sm transition-colors"
+                   style="background: rgba(0,0,0,0.04); color: var(--text-secondary);">
+                    取消
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

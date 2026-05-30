@@ -1,0 +1,105 @@
+{% extends "layout.html" %}
+{% block title %}目标列表 - Daily Planner{% endblock %}
+{% block content %}
+<div class="flex items-center justify-between mb-6">
+    <h1 class="text-xl font-bold" style="color: var(--text-primary)">🎯 目标列表</h1>
+    <a href="/targets/new" class="btn-primary">
+        + 新建目标
+    </a>
+</div>
+
+<!-- Filters -->
+<div class="flex gap-2 mb-4 flex-wrap">
+    <a href="/targets?target_type=deadline"
+       class="px-3 py-1.5 rounded-lg text-sm transition-colors"
+       style="{% if current_type == 'deadline' %}background: #fff7ed; color: #ea580c; font-weight: 600;{% else %}background: rgba(0,0,0,0.04); color: var(--text-muted);{% endif %}">
+        有期限
+    </a>
+    <a href="/targets?target_type=long_term"
+       class="px-3 py-1.5 rounded-lg text-sm transition-colors"
+       style="{% if current_type == 'long_term' %}background: #eff6ff; color: #2563eb; font-weight: 600;{% else %}background: rgba(0,0,0,0.04); color: var(--text-muted);{% endif %}">
+        长期
+    </a>
+    <a href="/targets?target_type=short_term"
+       class="px-3 py-1.5 rounded-lg text-sm transition-colors"
+       style="{% if current_type == 'short_term' %}background: #ecfdf5; color: #059669; font-weight: 600;{% else %}background: rgba(0,0,0,0.04); color: var(--text-muted);{% endif %}">
+        短期
+    </a>
+    <span style="color: var(--text-muted)">|</span>
+    <a href="/targets?status=active"
+       class="px-3 py-1.5 rounded-lg text-sm transition-colors"
+       style="{% if current_status == 'active' or not current_status %}background: var(--primary-subtle); color: var(--primary); font-weight: 600;{% else %}background: rgba(0,0,0,0.04); color: var(--text-muted);{% endif %}">
+        进行中
+    </a>
+    <a href="/targets?status=completed"
+       class="px-3 py-1.5 rounded-lg text-sm transition-colors"
+       style="{% if current_status == 'completed' %}background: #ecfdf5; color: #059669; font-weight: 600;{% else %}background: rgba(0,0,0,0.04); color: var(--text-muted);{% endif %}">
+        已完成
+    </a>
+    <a href="/targets?status=all"
+       class="px-3 py-1.5 rounded-lg text-sm transition-colors"
+       style="{% if current_status == 'all' %}background: var(--primary-subtle); color: var(--primary); font-weight: 600;{% else %}background: rgba(0,0,0,0.04); color: var(--text-muted);{% endif %}">
+        全部
+    </a>
+</div>
+
+<!-- Target list -->
+<div id="target-list">
+    {% if targets %}
+        {% for target in targets %}
+            {% include "targets/card.html" %}
+        {% endfor %}
+    {% else %}
+        <div class="text-center py-12" style="color: var(--text-muted);">
+            <div class="text-3xl mb-2">📭</div>
+            <p>暂无目标</p>
+            <p class="text-sm mt-1">点击右上角「+ 新建目标」开始制定计划</p>
+        </div>
+    {% endif %}
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
+<script>
+    var el = document.getElementById('target-list');
+    if (el && el.querySelector('.glass-card')) {
+        new Sortable(el, {
+            animation: 200,
+            handle: '.drag-handle',
+            ghostClass: 'sortable-ghost',
+            dragClass: 'sortable-drag',
+            onEnd: function() {
+                var ids = [];
+                el.querySelectorAll('[data-target-id]').forEach(function(card) {
+                    ids.push(card.getAttribute('data-target-id'));
+                });
+                fetch('/api/targets/reorder', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: 'ids=' + ids.join(',')
+                });
+            }
+        });
+    }
+</script>
+
+<style>
+    .sortable-ghost { opacity: 0.3; }
+    .sortable-drag { box-shadow: 0 12px 40px rgba(0,0,0,0.12) !important; }
+</style>
+
+<script>
+    document.body.addEventListener('target-updated', function() {
+        htmx.trigger('#target-list', 'refresh');
+    });
+    setTimeout(function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has('created') || urlParams.has('ai_created')) {
+            const msg = urlParams.has('ai_created') ? 'Target created via AI!' : 'Target created!';
+            document.body.dispatchEvent(new CustomEvent('show-toast', {
+                detail: { message: msg, type: 'success' }
+            }));
+            window.history.replaceState({}, '', window.location.pathname + window.location.search.replace(/[&?](ai_)?created=1/g, ''));
+        }
+    }, 200);
+</script>
+{% endblock %}

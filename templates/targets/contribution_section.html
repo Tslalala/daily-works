@@ -1,0 +1,101 @@
+<div id="contribution-section" class="mt-6">
+    <h2 class="text-sm font-medium mb-2" style="color: var(--text-primary)">📝 每日贡献</h2>
+
+    {# Today's contribution input #}
+    {% if contribution and contribution.content %}
+        <div class="glass-card-static p-3 mb-3" style="background: var(--primary-subtle); border-color: transparent;">
+            <div class="flex items-start justify-between gap-2" x-data="{ editing: false }">
+                <div x-show="!editing" class="flex-1">
+                    <p class="text-xs mb-1" style="color: var(--text-muted)">今天 ({{ now.strftime('%m-%d') if now else '' }})</p>
+                    <p class="text-sm" style="color: var(--text-primary); white-space: pre-wrap;">{{ contribution.content }}</p>
+                    <div class="flex items-center gap-2 mt-2">
+                        <button @click="editing = true" class="text-xs transition-colors" style="color: var(--text-muted)">编辑</button>
+                        <button hx-delete="/api/targets/{{ target.id }}/contribution"
+                                hx-target="#contribution-section"
+                                hx-swap="outerHTML"
+                                class="text-xs transition-colors" style="color: #dc2626;">删除</button>
+                    </div>
+                </div>
+                <form x-show="editing" x-cloak
+                      hx-post="/api/targets/{{ target.id }}/contribution"
+                      hx-target="#contribution-section"
+                      hx-swap="outerHTML"
+                      class="flex-1 flex items-start gap-2">
+                    <textarea name="content" rows="2" maxlength="500"
+                              class="flex-1 px-3 py-2 rounded-lg text-sm outline-none resize-none"
+                              style="border: 1px solid var(--glass-border); background: rgba(255,255,255,0.5); color: var(--text-primary);">{{ contribution.content }}</textarea>
+                    <button type="submit" class="btn-primary text-xs whitespace-nowrap">保存</button>
+                </form>
+            </div>
+        </div>
+    {% else %}
+        <form hx-post="/api/targets/{{ target.id }}/contribution"
+              hx-target="#contribution-section"
+              hx-swap="outerHTML"
+              class="flex items-start gap-2 mb-3">
+            <textarea name="content" rows="2" maxlength="500"
+                      class="flex-1 px-3 py-2 rounded-lg text-sm outline-none resize-none"
+                      style="border: 1px solid var(--glass-border); background: rgba(255,255,255,0.5); color: var(--text-primary);"
+                      placeholder="写下今天对这个目标的贡献..."></textarea>
+            <button type="submit" class="btn-primary text-xs whitespace-nowrap">确认</button>
+        </form>
+    {% endif %}
+
+    {# Recent contributions history #}
+    {% if recent_contributions %}
+    <div class="space-y-1.5">
+        <p class="text-xs mb-1" style="color: var(--text-muted)">历史贡献</p>
+        {% for c in recent_contributions %}
+            {% if not contribution or c.id != contribution.id %}
+            <div class="flex items-start justify-between gap-2 glass-card-static p-2 text-sm"
+                 x-data="{ editing: false }">
+                <div x-show="!editing" class="flex-1">
+                    <p class="text-xs" style="color: var(--text-muted)">{{ c.log_date.strftime('%m-%d') }}</p>
+                    <p class="text-sm" style="color: var(--text-primary); white-space: pre-wrap;">{{ c.content }}</p>
+                    <div class="flex items-center gap-2 mt-1">
+                        <button @click="editing = true" class="text-xs transition-colors" style="color: var(--text-muted)">编辑</button>
+                        <button hx-delete="/api/targets/{{ target.id }}/contribution?date={{ c.log_date }}"
+                                hx-target="#contribution-section"
+                                hx-swap="outerHTML"
+                                class="text-xs transition-colors" style="color: #dc2626;">删除</button>
+                    </div>
+                </div>
+                <form x-show="editing" x-cloak
+                      hx-post="/api/targets/{{ target.id }}/contribution"
+                      hx-target="#contribution-section"
+                      hx-swap="outerHTML"
+                      class="flex-1 flex items-start gap-2">
+                    <input type="hidden" name="date" value="{{ c.log_date }}">
+                    <textarea name="content" rows="2" maxlength="500"
+                              class="flex-1 px-3 py-2 rounded-lg text-sm outline-none resize-none"
+                              style="border: 1px solid var(--glass-border); background: rgba(255,255,255,0.5); color: var(--text-primary);">{{ c.content }}</textarea>
+                    <button type="submit" class="btn-primary text-xs whitespace-nowrap">保存</button>
+                </form>
+            </div>
+            {% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {# Quick backfill for any date #}
+    <div class="mt-3" x-data="{ showBackfill: false }">
+        <button @click="showBackfill = !showBackfill" class="text-xs transition-colors" style="color: var(--text-muted)">
+            + 补录历史贡献
+        </button>
+        <form x-show="showBackfill" x-cloak
+              hx-post="/api/targets/{{ target.id }}/contribution"
+              hx-target="#contribution-section"
+              hx-swap="outerHTML"
+              class="flex items-start gap-2 mt-2">
+            <input type="date" name="date" required
+                   class="px-2 py-1.5 rounded-lg text-xs outline-none"
+                   style="border: 1px solid var(--glass-border); background: rgba(255,255,255,0.5); color: var(--text-primary);"
+                   max="{{ now.strftime('%Y-%m-%d') if now else '' }}">
+            <textarea name="content" rows="2" maxlength="500"
+                      class="flex-1 px-3 py-2 rounded-lg text-sm outline-none resize-none"
+                      style="border: 1px solid var(--glass-border); background: rgba(255,255,255,0.5); color: var(--text-primary);"
+                      placeholder="补充内容..."></textarea>
+            <button type="submit" class="btn-primary text-xs whitespace-nowrap">确认</button>
+        </form>
+    </div>
+</div>

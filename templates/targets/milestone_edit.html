@@ -1,0 +1,21 @@
+<div class="flex items-center gap-2 text-sm" style="color: var(--text-secondary);">
+    <span class="w-4 h-4 flex-shrink-0"></span>
+    <form hx-put="/api/milestones/{{ m.id }}"
+          hx-target="#milestone-list"
+          hx-swap="outerHTML"
+          class="flex items-center gap-2 flex-1">
+        <input type="date" name="suggested_date"
+               value="{{ m.suggested_date.strftime('%Y-%m-%d') if m.suggested_date }}"
+               class="text-xs px-1 py-0.5 rounded border w-28"
+               style="border-color: var(--primary); background: transparent; color: var(--text-primary);">
+        <input type="text" name="title" value="{{ m.title }}" required
+               class="text-sm px-1 py-0.5 rounded border flex-1 min-w-0"
+               style="border-color: var(--primary); background: transparent; color: var(--text-primary);">
+        <button type="submit"
+                class="text-xs px-2 py-1 rounded"
+                style="background: var(--primary); color: white;">保存</button>
+        <button type="button" onclick="location.reload()"
+                class="text-xs px-2 py-1 rounded"
+                style="background: rgba(0,0,0,0.04); color: var(--text-secondary);">取消</button>
+    </form>
+</div>

@@ -1,0 +1,102 @@
+<div id="ai-suggestion" class="rounded-lg p-4 mb-4" style="background: linear-gradient(135deg, var(--primary-subtle), rgba(139,92,246,0.06)); border: 1px solid var(--primary-light);">
+    <div class="flex items-start justify-between mb-3">
+        <h3 class="text-sm font-semibold accent-text">🤖 AI 智能建议</h3>
+        <button onclick="this.closest('#ai-suggestion').remove()"
+                class="text-xs" style="color: var(--text-muted);">✕ 关闭</button>
+    </div>
+
+    <div class="space-y-3 text-sm">
+        <div class="glass-card-static p-3">
+            <p class="text-xs mb-1" style="color: var(--text-muted)">📝 AI 理解</p>
+            <p style="color: var(--text-primary)">{{ suggestion.description }}</p>
+        </div>
+
+        {% if suggestion.deadline_suggestion %}
+        <div class="glass-card-static p-3" style="border-color: #fecaca;">
+            <p class="text-xs mb-1" style="color: var(--text-muted)">📅 建议截止日期</p>
+            <p class="font-bold text-lg" style="color: #dc2626;">{{ suggestion.deadline_suggestion }}</p>
+        </div>
+        {% endif %}
+
+        <div class="flex gap-3">
+            <div class="flex-1 glass-card-static p-3">
+                <p class="text-xs mb-1" style="color: var(--text-muted)">📂 推荐类型</p>
+                <p class="font-medium" style="color: var(--text-primary)">
+                    {% if suggestion.target_type == "deadline" %}🔴 有期限
+                    {% elif suggestion.target_type == "long_term" %}🔵 长期
+                    {% else %}🟢 短期{% endif %}
+                </p>
+            </div>
+            <div class="flex-1 glass-card-static p-3">
+                <p class="text-xs mb-1" style="color: var(--text-muted)">⭐ 重要程度</p>
+                <p class="font-medium" style="color: var(--text-primary)">
+                    {% set stars = suggestion.importance %}
+                    {% for i in range(5) %}
+                        {% if i < stars %}⭐{% else %}☆{% endif %}
+                    {% endfor %}
+                    <span class="text-xs ml-1" style="color: var(--text-muted)">({{ stars }}/5)</span>
+                </p>
+            </div>
+        </div>
+
+        {% if suggestion.milestones %}
+        <div class="glass-card-static p-3">
+            <p class="text-xs mb-2" style="color: var(--text-muted)">📋 任务节点</p>
+            <div class="space-y-1.5">
+                {% for m in suggestion.milestones %}
+                <div class="flex items-center gap-2 text-xs">
+                    <span class="w-16 flex-shrink-0 font-medium accent-text">{{ m.date }}</span>
+                    <span class="w-1.5 h-1.5 rounded-full flex-shrink-0" style="background: var(--primary);"></span>
+                    <span style="color: var(--text-primary)">{{ m.title }}</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="flex gap-2 mt-3">
+        <form method="post" action="/api/ai/accept-target">
+            <input type="hidden" name="title" value="{{ title }}">
+            {% if target_id %}<input type="hidden" name="target_id" value="{{ target_id }}">{% endif %}
+            <input type="hidden" name="ai_description" value="{{ suggestion.description }}">
+            <input type="hidden" name="target_type" value="{{ suggestion.target_type }}">
+            <input type="hidden" name="importance" value="{{ suggestion.importance }}">
+            {% if suggestion.deadline_suggestion %}
+            <input type="hidden" name="ai_deadline" value="{{ suggestion.deadline_suggestion }}">
+            {% endif %}
+            <input type="hidden" name="milestones" value="{{ suggestion.milestones | tojson | forceescape }}">
+            <button type="submit" class="btn-primary text-xs">
+                ✅ 接受此建议
+            </button>
+        </form>
+
+        <button type="button" class="btn-ghost text-xs"
+                onclick="event.target.closest('#ai-suggestion').querySelector('.refine-form').classList.remove('hidden'); event.target.style.display='none';">
+            🔄 重新生成
+        </button>
+
+        <div class="refine-form hidden flex-1">
+            <form hx-post="/api/ai/refine-target"
+                  hx-target="#ai-suggestion"
+                  hx-swap="outerHTML"
+                  hx-indicator="#refine-loading"
+                  class="flex gap-2">
+                <input type="hidden" name="title" value="{{ title }}">
+                <input type="hidden" name="description" value="{{ description }}">
+                <input type="hidden" name="original_suggestion" value="{{ suggestion | tojson | forceescape }}">
+                {% if target_id %}<input type="hidden" name="target_id" value="{{ target_id }}">{% endif %}
+                <input type="text" name="feedback" placeholder="输入补充说明..."
+                       class="flex-1 px-2 py-1 border rounded text-xs outline-none"
+                       style="border-color: #e2e8f0; background: rgba(255,255,255,0.5);"
+                       required>
+                <button type="submit" class="btn-ghost text-xs whitespace-nowrap">
+                    确定
+                </button>
+                <span id="refine-loading" class="htmx-indicator text-xs" style="color: var(--text-muted); white-space: nowrap;">
+                    <span class="inline-block animate-pulse">正在重新生成...</span>
+                </span>
+            </form>
+        </div>
+    </div>
+</div>

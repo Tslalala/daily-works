@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl -s -o /dev/null -w '%{http_code}' -X POST -d 'title=Progress Test' -d ai_description=Test -d target_type=short_term -d importance=3 --data-urlencode 'milestones=[{\"title\":\"Task A\",\"date\":\"2026-05-18\"},{\"title\":\"Task B\",\"date\":\"2026-05-19\"},{\"title\":\"Task C\",\"date\":\"2026-05-20\"},{\"title\":\"Task D\",\"date\":\"2026-05-21\"}]' http://localhost:8000/api/ai/accept-target)"
+    ]
+  }
+}

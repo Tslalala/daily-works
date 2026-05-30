@@ -1,0 +1,29 @@
+<div class="flex items-center gap-2 text-sm group" style="{% if m.completed %}color: var(--text-muted);{% else %}color: var(--text-secondary);{% endif %}"
+     id="milestone-{{ m.id }}">
+    <button hx-post="/api/milestones/{{ m.id }}/toggle"
+            hx-target="#milestone-{{ m.id }}"
+            hx-swap="outerHTML"
+            class="w-4 h-4 rounded-full border flex items-center justify-center flex-shrink-0 cursor-pointer transition-colors"
+            style="{% if m.completed %}background: var(--primary); border-color: var(--primary); color: white; font-size: 10px;{% else %}border-color: #d1d5db;{% endif %}">
+        {% if m.completed %}✓{% endif %}
+    </button>
+    {% if m.suggested_date %}
+        <span class="text-xs w-20 flex-shrink-0 accent-text">{{ m.suggested_date.strftime('%m-%d') }}</span>
+    {% else %}
+        <span class="text-xs w-20 flex-shrink-0" style="color: var(--text-muted);">--</span>
+    {% endif %}
+    <span class="flex-1 min-w-0 truncate">{{ m.title }}</span>
+    <button hx-get="/api/milestones/{{ m.id }}/edit"
+            hx-target="#milestone-{{ m.id }}"
+            hx-swap="outerHTML"
+            class="text-xs px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity"
+            style="background: rgba(0,0,0,0.04); color: var(--text-secondary);"
+            title="编辑">编辑</button>
+    <button hx-delete="/api/milestones/{{ m.id }}"
+            hx-confirm="确定删除此里程碑？"
+            hx-target="#milestone-list"
+            hx-swap="outerHTML"
+            class="text-xs px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity"
+            style="color: #dc2626; background: #fef2f2;"
+            title="删除">删除</button>
+</div>

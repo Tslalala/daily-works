@@ -1,0 +1,63 @@
+<div class="glass-card p-4 mb-3" id="target-{{ target.id }}" data-target-id="{{ target.id }}">
+    <div class="flex items-start">
+        <span class="drag-handle flex-shrink-0 mr-2 text-base leading-none select-none pt-0.5" style="cursor: grab; color: var(--text-muted);" title="拖动排序">⋮⋮</span>
+        <div class="flex-1 min-w-0">
+            <div class="flex items-start justify-between">
+                <div class="min-w-0">
+                    <div class="flex items-center gap-2 mb-1 flex-wrap">
+                        {% if target.status == "completed" %}
+                            <span class="inline-flex items-center justify-center w-5 h-5 rounded-full text-white text-xs flex-shrink-0" style="background: var(--primary);">✓</span>
+                        {% elif target.target_type == "deadline" %}
+                            <span class="inline-flex items-center justify-center w-5 h-5 rounded-full text-xs flex-shrink-0" style="background: #fff7ed; color: #ea580c;">!</span>
+                        {% else %}
+                            <span class="inline-flex items-center justify-center w-5 h-5 rounded-full text-xs flex-shrink-0" style="background: var(--primary-bg); color: var(--primary);">•</span>
+                        {% endif %}
+                        <a href="/targets/{{ target.id }}" class="text-sm font-medium hover:accent-text {% if target.status == 'completed' %}line-through{% endif %}" style="color: {% if target.status == 'completed' %}var(--text-muted){% else %}var(--text-primary){% endif %}">
+                            {{ target.title }}
+                        </a>
+                        <span class="text-xs px-1.5 py-0.5 rounded" style="background: rgba(0,0,0,0.04); color: var(--text-muted);">{{ target.target_type|type_label }}</span>
+                        <span class="text-xs px-1.5 py-0.5 rounded"
+                            style="{% if target.priority == 1 %}background: #fef2f2; color: #dc2626;{% elif target.priority == 2 %}background: #fefce8; color: #ca8a04;{% else %}background: rgba(0,0,0,0.04); color: var(--text-muted);{% endif %}">
+                            {{ target.priority|priority_label }}优先级
+                        </span>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2 ml-3 flex-shrink-0">
+                    {% if target.status != "completed" %}
+                        <button hx-post="/api/targets/{{ target.id }}/complete"
+                                hx-target="#target-{{ target.id }}"
+                                hx-swap="outerHTML"
+                                class="text-xs px-2 py-1 rounded transition-colors"
+                                style="background: #ecfdf5; color: #059669;"
+                                title="标记完成">完成</button>
+                    {% endif %}
+                    <a href="/targets/{{ target.id }}/edit"
+                       class="text-xs px-2 py-1 rounded transition-colors"
+                       style="background: rgba(0,0,0,0.04); color: var(--text-secondary);">编辑</a>
+                    <button hx-delete="/api/targets/{{ target.id }}"
+                            hx-confirm="确定删除这个目标吗？"
+                            hx-target="#target-{{ target.id }}"
+                            hx-swap="outerHTML"
+                            class="text-xs px-2 py-1 rounded transition-colors"
+                            style="background: #fef2f2; color: #dc2626;">删除</button>
+                </div>
+            </div>
+            {% if target.description %}
+                <p class="text-xs mb-2 line-clamp-1" style="color: var(--text-muted)">{{ target.description }}</p>
+            {% endif %}
+            {% if target.target_type == "deadline" and target.deadline %}
+                <p class="text-xs" style="{% if target.deadline|deadline_class %}{{ target.deadline|deadline_class }}{% endif %}">{{ target.deadline|format_dt("%Y-%m-%d") }} · {{ target.deadline|days_remaining }}</p>
+            {% endif %}
+            <!-- Progress bar -->
+            <div class="mt-3">
+                <div class="flex items-center gap-2">
+                    <div class="flex-1 rounded-full h-2" style="background: rgba(0,0,0,0.06);">
+                        <div class="h-2 rounded-full transition-all duration-300"
+                             style="width: {{ target.progress }}%; background: {% if target.progress == 100 %}var(--primary){% elif target.progress > 0 %}var(--primary){% else %}rgba(0,0,0,0.08){% endif %};"></div>
+                    </div>
+                    <span class="text-xs w-8 text-right" style="color: var(--text-muted)">{{ target.progress }}%</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

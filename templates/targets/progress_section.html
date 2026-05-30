@@ -1,0 +1,10 @@
+<div id="progress-section" class="mb-6" {% if oob %}hx-swap-oob="true"{% endif %}>
+    <div class="flex items-center justify-between mb-1">
+        <span class="text-sm" style="color: var(--text-muted)">进度</span>
+        <span class="text-sm font-medium" style="{% if target.progress == 100 %}color: var(--primary);{% else %}color: var(--text-secondary);{% endif %}">{{ target.progress }}%</span>
+    </div>
+    <div class="rounded-full h-3" style="background: rgba(0,0,0,0.06);">
+        <div class="h-3 rounded-full transition-all duration-500"
+             style="width: {{ target.progress }}%; background: var(--primary);"></div>
+    </div>
+</div>

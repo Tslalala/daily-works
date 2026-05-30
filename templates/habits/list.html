@@ -1,0 +1,41 @@
+{% extends "layout.html" %}
+{% block title %}习惯打卡 - Daily Planner{% endblock %}
+{% block content %}
+<div class="flex items-center justify-between mb-6">
+    <div>
+        <h1 class="text-xl font-bold" style="color: var(--text-primary)">✅ 习惯打卡</h1>
+        <p class="text-sm mt-0.5" style="color: var(--text-muted)">{{ now.strftime('%Y年%m月%d日 %A') }}</p>
+    </div>
+    <a href="/habits/new" class="btn-primary">
+        + 新建习惯
+    </a>
+</div>
+
+<div id="habits-list" class="space-y-3">
+    {% if habits_data %}
+        {% for item in habits_data %}
+            {% with habit=item.habit, checkin=item.checkin, streak=item.streak %}
+                {% include "habits/card.html" %}
+            {% endwith %}
+        {% endfor %}
+    {% else %}
+        <div class="text-center py-12" style="color: var(--text-muted);">
+            <div class="text-3xl mb-2">📭</div>
+            <p>还没有习惯，点击「+ 新建习惯」添加</p>
+            <p class="text-sm mt-1">例如：每日健身、Duolingo 英语、冥想</p>
+        </div>
+    {% endif %}
+</div>
+
+<script>
+    setTimeout(function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has('created')) {
+            document.body.dispatchEvent(new CustomEvent('show-toast', {
+                detail: { message: 'Habit created!', type: 'success' }
+            }));
+            window.history.replaceState({}, '', window.location.pathname);
+        }
+    }, 200);
+</script>
+{% endblock %}

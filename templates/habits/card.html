@@ -1,0 +1,65 @@
+<div class="glass-card p-4" id="habit-{{ habit.id }}">
+    <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <a href="/habits/{{ habit.id }}" class="text-2xl hover:scale-110 transition-transform inline-block">{{ habit.icon }}</a>
+            <div>
+                <a href="/habits/{{ habit.id }}" class="text-sm font-medium hover:accent-text" style="color: var(--text-primary)">{{ habit.name }}</a>
+                <div class="flex items-center gap-2 text-xs" style="color: var(--text-muted)">
+                    {% if streak > 0 %}
+                        <span class="font-medium" style="color: #ea580c;">🔥 连续 {{ streak }} 天</span>
+                    {% else %}
+                        <span>尚未开始</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="flex items-center gap-2">
+            {% if checkin %}
+                <div class="text-right">
+                    <div class="flex items-center gap-1">
+                        <span class="text-xs px-2 py-1 rounded inline-flex items-center gap-1" style="background: #ecfdf5; color: #059669;">
+                            <span>✅</span>
+                            <span>{{ checkin.created_at.strftime('%H:%M') if checkin.created_at else '已打卡' }}</span>
+                        </span>
+                        <button hx-delete="/api/checkins/{{ checkin.id }}"
+                                hx-target="#habit-{{ habit.id }}"
+                                hx-swap="outerHTML"
+                                class="text-xs transition-colors"
+                                style="color: var(--text-muted)"
+                                title="撤销打卡">撤销</button>
+                    </div>
+                    {% if checkin.note %}
+                        <p class="text-xs mt-1 max-w-[200px] truncate" style="color: var(--text-muted)" title="{{ checkin.note }}">💬 {{ checkin.note }}</p>
+                    {% endif %}
+                </div>
+            {% else %}
+                <form hx-post="/api/checkins/{{ habit.id }}"
+                      hx-target="#habit-{{ habit.id }}"
+                      hx-swap="outerHTML"
+                      class="flex items-center gap-1">
+                    <input type="text" name="note" maxlength="200"
+                           class="w-28 px-2 py-1 border rounded text-xs outline-none"
+                           style="border-color: #e2e8f0; background: rgba(255,255,255,0.5);"
+                           placeholder="备注(可选)">
+                    <button type="submit" class="btn-primary text-xs whitespace-nowrap">
+                        📝 打卡
+                    </button>
+                </form>
+            {% endif %}
+            <div class="relative" x-data="{ open: false }">
+                <button @click="open = !open" class="text-sm px-1" style="color: var(--text-muted)">⋯</button>
+                <div x-show="open" @click.away="open = false"
+                     class="absolute right-0 mt-1 glass-card-static py-1 z-10 w-24">
+                    <a href="/habits/{{ habit.id }}" class="block px-3 py-1.5 text-xs transition-colors" style="color: var(--text-secondary);">查看详情</a>
+                    <a href="/habits/{{ habit.id }}/edit" class="block px-3 py-1.5 text-xs transition-colors" style="color: var(--text-secondary);">编辑</a>
+                    <button hx-delete="/api/habits/{{ habit.id }}"
+                            hx-confirm="确定删除这个习惯吗？"
+                            hx-target="#habit-{{ habit.id }}"
+                            hx-swap="outerHTML"
+                            class="block w-full text-left px-3 py-1.5 text-xs transition-colors"
+                            style="color: #dc2626;">删除</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

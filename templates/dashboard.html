@@ -1,0 +1,32 @@
+{% extends "layout.html" %}
+{% block title %}仪表盘 - Daily Planner{% endblock %}
+{% block content %}
+<div class="max-w-3xl mx-auto">
+    <h1 class="text-xl font-bold mb-4" style="color: var(--text-primary)">📋 动态</h1>
+
+    {# Custom date range #}
+    <div class="flex items-center gap-2 text-sm mb-4">
+        <form class="flex items-center gap-2"
+              hx-get="/api/activity-logs" hx-target="#activity-logs" hx-swap="innerHTML"
+              hx-indicator="#logs-loading">
+            <span class="text-xs" style="color: var(--text-muted)">自定义查询：</span>
+            <input type="date" name="start" value="{{ week_ago.isoformat() }}"
+                   class="px-2 py-1.5 border rounded-lg text-xs outline-none"
+                   style="border-color: #e2e8f0; background: rgba(255,255,255,0.5);">
+            <span style="color: var(--text-muted)">~</span>
+            <input type="date" name="end" value="{{ today.isoformat() }}"
+                   class="px-2 py-1.5 border rounded-lg text-xs outline-none"
+                   style="border-color: #e2e8f0; background: rgba(255,255,255,0.5);">
+            <button type="submit" class="btn-primary text-xs px-3 py-1.5">查询</button>
+        </form>
+    </div>
+
+    {# Activity logs container #}
+    <div id="activity-logs" class="min-h-[300px] relative">
+        {% include "dashboard/logs_fragment.html" %}
+        <div id="logs-loading" class="htmx-indicator absolute inset-0 glass-card-static flex items-center justify-center">
+            <span class="text-sm" style="color: var(--text-muted)">⏳ 加载中...</span>
+        </div>
+    </div>
+</div>
+{% endblock %}

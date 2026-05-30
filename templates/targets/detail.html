@@ -1,0 +1,107 @@
+{% extends "layout.html" %}
+{% block title %}{{ target.title }} - Daily Planner{% endblock %}
+{% block content %}
+<div class="max-w-3xl mx-auto">
+    <div class="flex items-center gap-2 mb-4">
+        <a href="/targets" style="color: var(--text-muted)" class="hover:opacity-70">&larr; 目标列表</a>
+    </div>
+
+    <div class="glass-card p-6">
+        <!-- Header -->
+        <div class="flex items-start justify-between mb-4">
+            <div>
+                <div class="flex items-center gap-2 mb-1">
+                    <h1 class="text-xl font-bold" style="color: var(--text-primary)">{{ target.title }}</h1>
+                    <span class="text-xs px-1.5 py-0.5 rounded" style="background: rgba(0,0,0,0.04); color: var(--text-muted);">{{ target.target_type|type_label }}</span>
+                    <span class="text-xs px-1.5 py-0.5 rounded"
+                        style="{% if target.priority == 1 %}background: #fef2f2; color: #dc2626;{% elif target.priority == 2 %}background: #fefce8; color: #ca8a04;{% else %}background: rgba(0,0,0,0.04); color: var(--text-muted);{% endif %}">
+                        {{ target.priority|priority_label }}优先级
+                    </span>
+                    {% if target.status == "completed" %}
+                        <span class="text-xs px-1.5 py-0.5 rounded" style="background: #ecfdf5; color: #059669;">已完成</span>
+                    {% endif %}
+                </div>
+                {% if target.target_type == "deadline" and target.deadline %}
+                    <p class="text-sm" style="{% if target.deadline|deadline_class %}{{ target.deadline|deadline_class }}{% endif %}">
+                        {{ target.deadline|format_dt("%Y-%m-%d %H:%M") }} · {{ target.deadline|days_remaining }}
+                    </p>
+                {% endif %}
+            </div>
+            <div class="flex gap-2">
+                {% if target.status != "completed" %}
+                    <button hx-post="/api/targets/{{ target.id }}/complete"
+                            hx-target="body"
+                            hx-swap="beforeend"
+                            hx-on::after-request="window.location.reload()"
+                            class="btn-primary text-xs">
+                        标记完成
+                    </button>
+                {% endif %}
+                <a href="/targets/{{ target.id }}/edit"
+                   class="px-3 py-1.5 rounded-lg text-sm transition-colors"
+                   style="background: rgba(0,0,0,0.04); color: var(--text-secondary);">
+                    编辑
+                </a>
+                <button hx-delete="/api/targets/{{ target.id }}"
+                        hx-confirm="确定删除这个目标吗？"
+                        hx-on::after-request="window.location.href='/targets'"
+                        class="px-3 py-1.5 rounded-lg text-sm transition-colors"
+                        style="background: #fef2f2; color: #dc2626;">
+                    删除
+                </button>
+            </div>
+        </div>
+
+        <!-- Progress -->
+        {% include "targets/progress_section.html" %}
+
+        <!-- Description -->
+        {% if target.description %}
+            <div class="mb-6">
+                <h2 class="text-sm font-medium mb-1" style="color: var(--text-primary)">描述</h2>
+                <p class="text-sm" style="color: var(--text-secondary)">{{ target.description }}</p>
+            </div>
+        {% endif %}
+
+        <!-- Milestones -->
+        <div x-data="{ showAdd: false }">
+            <h2 class="text-sm font-medium mb-2" style="color: var(--text-primary)">里程碑 ({{ target.milestones|length }})</h2>
+            <div class="space-y-1" id="milestone-list">
+            {% for m in target.milestones %}
+                {% include "targets/milestone_row.html" %}
+            {% endfor %}
+            </div>
+            <!-- Add milestone form (Alpine.js toggle) -->
+            <div class="mt-2">
+                <button x-show="!showAdd" @click="showAdd = true"
+                        class="text-xs px-2 py-1 rounded transition-colors"
+                        style="background: var(--primary-bg); color: var(--primary);">
+                    + 添加里程碑
+                </button>
+                <form x-show="showAdd"
+                      hx-post="/api/targets/{{ target.id }}/milestones"
+                      hx-target="#milestone-list"
+                      hx-swap="outerHTML"
+                      hx-on::after-request="if(event.detail.successful) showAdd = false"
+                      class="flex items-center gap-2 mt-1">
+                    <input type="date" name="suggested_date"
+                           class="text-xs px-1 py-0.5 rounded border"
+                           style="border-color: #d1d5db; background: transparent; color: var(--text-primary);">
+                    <input type="text" name="title" placeholder="里程碑名称" required
+                           class="text-sm px-1 py-0.5 rounded border flex-1 min-w-0"
+                           style="border-color: #d1d5db; background: transparent; color: var(--text-primary);">
+                    <button type="submit"
+                            class="text-xs px-2 py-1 rounded"
+                            style="background: var(--primary); color: white;">添加</button>
+                    <button type="button" @click="showAdd = false"
+                            class="text-xs px-2 py-1 rounded"
+                            style="background: rgba(0,0,0,0.04); color: var(--text-secondary);">取消</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Today's Contribution -->
+        {% include "targets/contribution_section.html" %}
+    </div>
+</div>
+{% endblock %}

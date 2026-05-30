@@ -1,0 +1,9 @@
+.apikey
+__pycache__/
+*.pyc
+.env
+daily_planner.db
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
