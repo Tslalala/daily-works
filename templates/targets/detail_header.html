@@ -1,0 +1,115 @@
+<div id="detail-header" x-data="{ editType: false, editPrio: false, editDesc: false }">
+    <div class="flex items-start justify-between mb-4">
+        <div>
+            <div class="flex items-center gap-2 mb-1 flex-wrap">
+                <h1 class="text-xl font-bold" style="color: var(--text-primary)">{{ target.title }}</h1>
+
+                <!-- Target type badge / editor -->
+                <span x-show="!editType" @click="editType = true"
+                      class="text-xs px-1.5 py-0.5 rounded cursor-pointer hover:ring-2 hover:ring-primary transition-all"
+                      style="background: rgba(0,0,0,0.04); color: var(--text-muted);">
+                    {{ target.target_type|type_label }}
+                </span>
+                <form x-show="editType" x-cloak
+                      hx-put="/api/targets/{{ target.id }}/header"
+                      hx-target="#detail-header"
+                      hx-swap="outerHTML">
+                    <select name="target_type"
+                            @change="$event.target.form.requestSubmit()"
+                            class="text-xs px-1 py-0.5 rounded border"
+                            style="border-color: var(--primary); background: transparent; color: var(--text-primary);"
+                            x-init="$el.focus()">
+                        <option value="deadline" {% if target.target_type == 'deadline' %}selected{% endif %}>有期限</option>
+                        <option value="long_term" {% if target.target_type == 'long_term' %}selected{% endif %}>长期</option>
+                        <option value="short_term" {% if target.target_type == 'short_term' %}selected{% endif %}>短期</option>
+                    </select>
+                </form>
+
+                <!-- Priority badge / editor -->
+                <span x-show="!editPrio" @click="editPrio = true"
+                      class="text-xs px-1.5 py-0.5 rounded cursor-pointer hover:ring-2 hover:ring-primary transition-all"
+                      style="{% if target.priority == 1 %}background: #fef2f2; color: #dc2626;{% elif target.priority == 2 %}background: #fefce8; color: #ca8a04;{% else %}background: rgba(0,0,0,0.04); color: var(--text-muted);{% endif %}">
+                    {{ target.priority|priority_label }}优先级
+                </span>
+                <form x-show="editPrio" x-cloak
+                      hx-put="/api/targets/{{ target.id }}/header"
+                      hx-target="#detail-header"
+                      hx-swap="outerHTML">
+                    <select name="priority"
+                            @change="$event.target.form.requestSubmit()"
+                            class="text-xs px-1 py-0.5 rounded border"
+                            style="border-color: var(--primary); background: transparent; color: var(--text-primary);"
+                            x-init="$el.focus()">
+                        <option value="1" {% if target.priority == 1 %}selected{% endif %}>高优先级</option>
+                        <option value="2" {% if target.priority == 2 %}selected{% endif %}>中优先级</option>
+                        <option value="3" {% if target.priority == 3 %}selected{% endif %}>低优先级</option>
+                    </select>
+                </form>
+
+                {% if target.status == "completed" %}
+                    <span class="text-xs px-1.5 py-0.5 rounded" style="background: #ecfdf5; color: #059669;">已完成</span>
+                {% endif %}
+            </div>
+            {% if target.target_type == "deadline" and target.deadline %}
+                <p class="text-sm" style="{% if target.deadline|deadline_class %}{{ target.deadline|deadline_class }}{% endif %}">
+                    {{ target.deadline|format_dt("%Y-%m-%d %H:%M") }} · {{ target.deadline|days_remaining }}
+                </p>
+            {% endif %}
+        </div>
+        <div class="flex gap-2 flex-shrink-0">
+            {% if target.status != "completed" %}
+                <button hx-post="/api/targets/{{ target.id }}/complete"
+                        hx-target="body"
+                        hx-swap="beforeend"
+                        hx-on::after-request="window.location.reload()"
+                        class="btn-primary text-xs">
+                    标记完成
+                </button>
+            {% endif %}
+            <a href="/targets/{{ target.id }}/edit"
+               class="px-3 py-1.5 rounded-lg text-sm transition-colors"
+               style="background: rgba(0,0,0,0.04); color: var(--text-secondary);">
+                编辑
+            </a>
+            <button hx-delete="/api/targets/{{ target.id }}"
+                    hx-confirm="确定删除这个目标吗？"
+                    hx-on::after-request="window.location.href='/targets'"
+                    class="px-3 py-1.5 rounded-lg text-sm transition-colors"
+                    style="background: #fef2f2; color: #dc2626;">
+                删除
+            </button>
+        </div>
+    </div>
+
+    <!-- Description -->
+    <div class="mb-6">
+        <h2 class="text-sm font-medium mb-1" style="color: var(--text-primary)">描述</h2>
+        <div x-show="!editDesc" @click="editDesc = true"
+             class="text-sm cursor-pointer hover:ring-2 hover:ring-primary rounded-lg p-1 -m-1 transition-all"
+             style="color: var(--text-secondary); min-height: 1.5em;">
+            {% if target.description %}
+                {{ target.description }}
+            {% else %}
+                <span style="color: var(--text-muted);">暂无描述，点击添加</span>
+            {% endif %}
+        </div>
+        <form x-show="editDesc" x-cloak
+              hx-put="/api/targets/{{ target.id }}/header"
+              hx-target="#detail-header"
+              hx-swap="outerHTML"
+              class="flex flex-col gap-2">
+            <textarea name="description" rows="3"
+                      class="text-sm px-2 py-1.5 rounded-lg border w-full"
+                      style="border-color: var(--primary); background: transparent; color: var(--text-primary);"
+                      x-init="$el.focus()">{{ target.description or '' }}</textarea>
+            <div class="flex gap-2">
+                <button type="submit"
+                        class="text-xs px-3 py-1.5 rounded"
+                        style="background: var(--primary); color: white;">保存</button>
+                <button type="button" @click="editDesc = false"
+                        class="text-xs px-3 py-1.5 rounded"
+                        style="background: rgba(0,0,0,0.04); color: var(--text-secondary);">取消</button>
+            </div>
+        </form>
+    </div>
+</div>

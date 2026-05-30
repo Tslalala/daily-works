@@ -36,7 +36,7 @@ async def api_create_target(request: Request, db: Session = Depends(get_db)):
     t = create_target(db, data)
     type_label = TYPE_LABEL.get(t.target_type, "短期")
     log_action(db, "create_target", f"创建了{type_label}目标「{t.title}」", target_type=t.target_type, target_id=t.id)
-    return RedirectResponse(url="/targets?created=1", status_code=303)
+    return RedirectResponse(url=f"/targets/{t.id}", status_code=303)
 
 
 @router.put("/targets/{target_id}", response_class=HTMLResponse)
@@ -55,6 +55,26 @@ async def api_update_target(request: Request, target_id: int, db: Session = Depe
     return templates.TemplateResponse("targets/card.html", {
         "request": request, "target": t,
     }, headers={"HX-Trigger": '{"show-toast": {"message": "Target updated!", "type": "success"}}'})
+
+
+@router.put("/targets/{target_id}/header", response_class=HTMLResponse)
+async def api_update_target_header(request: Request, target_id: int, db: Session = Depends(get_db)):
+    form = await request.form()
+    t = get_target(db, target_id)
+    if not t:
+        return HTMLResponse("", status_code=404)
+    if form.get("target_type"):
+        t.target_type = form["target_type"]
+    if form.get("priority"):
+        t.priority = int(form["priority"])
+    if "description" in form:
+        t.description = form.get("description") or None
+    t.updated_at = datetime.now()
+    db.commit()
+    db.refresh(t)
+    return templates.TemplateResponse("targets/detail_header.html", {
+        "request": request, "target": t,
+    }, headers={"HX-Trigger": json.dumps({"show-toast": {"message": "已更新", "type": "success"}})})
 
 
 @router.delete("/targets/{target_id}", response_class=HTMLResponse)

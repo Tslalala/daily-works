@@ -34,7 +34,7 @@
         <form id="target-form"
               hx-put="{{ '/api/targets/' ~ target.id }}"
               hx-swap="none"
-              hx-on::after-request="if(event.detail.successful && event.detail.elt === this) setTimeout(() => window.location.href='/targets', 800)"
+              hx-on::after-request="if(event.detail.successful && event.detail.elt === this) setTimeout(() => window.location.href='/targets/{{ target.id }}', 800)"
               class="space-y-4">
         {% endif %}
 

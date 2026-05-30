@@ -200,7 +200,7 @@ async def ai_accept_target(request: Request, db: Session = Depends(get_db)):
 
         type_label = {"deadline": "有期限", "short_term": "短期", "long_term": "长期"}.get(t.target_type, "短期")
         log_action(db, "update_target", f"AI 更新了{type_label}目标「{t.title}」", target_type=t.target_type, target_id=t.id)
-        return RedirectResponse(url="/targets?ai_updated=1", status_code=303)
+        return RedirectResponse(url=f"/targets/{t.id}?ai_updated=1", status_code=303)
     else:
         # Create new target
         data = TargetCreate(
@@ -230,7 +230,7 @@ async def ai_accept_target(request: Request, db: Session = Depends(get_db)):
 
         type_label = {"deadline": "有期限", "short_term": "短期", "long_term": "长期"}.get(t.target_type, "短期")
         log_action(db, "create_target", f"创建了{type_label}目标「{t.title}」(AI)", target_type=t.target_type, target_id=t.id)
-        return RedirectResponse(url="/targets?ai_created=1", status_code=303)
+        return RedirectResponse(url=f"/targets/{t.id}?ai_created=1", status_code=303)
 
 
 @router.post("/generate-daily-log", response_class=HTMLResponse)
