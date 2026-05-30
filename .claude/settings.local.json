@@ -189,7 +189,10 @@
       "Bash(git config *)",
       "WebFetch(domain:github.com)",
       "Bash(git remote *)",
-      "Bash(git add *)"
+      "Bash(git add *)",
+      "Bash(git push *)",
+      "Bash(ssh -T git@github.com)",
+      "Bash(git commit -m ' *)"
     ]
   }
 }
