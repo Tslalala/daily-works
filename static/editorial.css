@@ -85,6 +85,7 @@ input[type="checkbox"], input[type="radio"] { accent-color: var(--primary); }
 .editorial-intro { padding-bottom: 28px; margin-bottom: 28px; border-bottom: 1px solid var(--line); }
 .editorial-intro p { max-width: 640px; color: var(--text-secondary); }
 .editorial-intro h1 { margin: 10px 0 12px; }
+.editorial-intro h1 .quote-author { display: block; text-align: right; margin-top: 6px; font-size: 18px; font-weight: 400; letter-spacing: .02em; color: var(--text-muted); }
 .editorial-filter { padding: 16px 0 22px; border-bottom: 1px solid var(--line); }
 .editorial-filter form { flex-wrap: wrap; }
 .editorial-filter input { padding: 8px 10px; }
