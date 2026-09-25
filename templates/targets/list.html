@@ -2,7 +2,10 @@
 {% block title %}{{ t('targets.list_title') }} - Daily Planner{% endblock %}
 {% block content %}
 <div class="flex items-center justify-between mb-6">
-    <h1 class="text-xl font-bold" style="color: var(--text-primary)">{{ t('targets.list_title') }}</h1>
+    <div>
+        <h1 class="text-xl font-bold" style="color: var(--text-primary)">{{ t('targets.list_title') }}</h1>
+        <p class="text-sm mt-0.5" style="color: var(--text-muted)">{{ now.strftime('%Y-%m-%d') }} {{ now|weekday_long }}</p>
+    </div>
     <a href="/targets/new" class="btn-primary text-2xl px-8 py-2">
         {{ t('targets.new') }}
     </a>
