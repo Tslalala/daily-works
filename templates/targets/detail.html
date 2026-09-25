@@ -3,7 +3,7 @@
 {% block content %}
 <div class="max-w-3xl mx-auto">
     <div class="flex items-center gap-2 mb-4">
-        <a href="/targets" style="color: var(--text-muted)" class="hover:opacity-70">&larr; 目标列表</a>
+        <a href="/targets" style="color: var(--text-muted)" class="hover:opacity-70">&larr; {{ t('targets.list_title') }}</a>
     </div>
 
     <div class="glass-card p-6">
@@ -11,43 +11,16 @@
         {% include "targets/detail_header.html" %}
 
         <!-- Progress -->
+        {% include "targets/progress_section.html" %}
 
         <!-- Milestones -->
-        <div x-data="{ showAdd: false }">
-            <h2 class="text-sm font-medium mb-2" style="color: var(--text-primary)">里程碑 ({{ target.milestones|length }})</h2>
-            <div class="space-y-1" id="milestone-list">
-            {% for m in target.milestones %}
-                {% include "targets/milestone_row.html" %}
-            {% endfor %}
-            </div>
-            <!-- Add milestone form (Alpine.js toggle) -->
-            <div class="mt-2">
-                <button x-show="!showAdd" @click="showAdd = true"
-                        class="text-xs px-2 py-1 rounded transition-colors"
-                        style="background: var(--primary-bg); color: var(--primary);">
-                    + 添加里程碑
-                </button>
-                <form x-show="showAdd"
-                      hx-post="/api/targets/{{ target.id }}/milestones"
-                      hx-target="#milestone-list"
-                      hx-swap="outerHTML"
-                      hx-on::after-request="if(event.detail.successful) showAdd = false"
-                      class="flex items-center gap-2 mt-1">
-                    <input type="date" name="suggested_date"
-                           class="text-xs px-1 py-0.5 rounded border"
-                           style="border-color: #d1d5db; background: transparent; color: var(--text-primary);">
-                    <input type="text" name="title" placeholder="里程碑名称" required
-                           class="text-sm px-1 py-0.5 rounded border flex-1 min-w-0"
-                           style="border-color: #d1d5db; background: transparent; color: var(--text-primary);">
-                    <button type="submit"
-                            class="text-xs px-2 py-1 rounded"
-                            style="background: var(--primary); color: white;">添加</button>
-                    <button type="button" @click="showAdd = false"
-                            class="text-xs px-2 py-1 rounded"
-                            style="background: rgba(0,0,0,0.04); color: var(--text-secondary);">取消</button>
-                </form>
-            </div>
+        <h2 id="milestone-heading" class="text-sm font-medium mb-2" style="color: var(--text-primary)">{{ t('targets.milestones') }} ({{ target.milestones|length }})</h2>
+        <div class="space-y-1" id="milestone-list">
+        {% for m in target.milestones %}
+            {% include "targets/milestone_row.html" %}
+        {% endfor %}
         </div>
+        {% include "targets/milestone_form.html" %}
 
         <!-- Today's Contribution -->
         {% include "targets/contribution_section.html" %}

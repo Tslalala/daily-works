@@ -66,7 +66,7 @@ pip install -r requirements.txt
 python run.py
 ```
 
-服务默认运行在 **<http://localhost:8000>**
+服务默认运行在 **<http://localhost:8665>**
 
 ### 4. 开机自启动（Windows）
 

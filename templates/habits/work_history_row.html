@@ -1,0 +1,23 @@
+{% set row_id = "work-row-" + item.rec.work_date.isoformat() %}
+<div class="flex items-center justify-between gap-2 text-xs" id="{{ row_id }}">
+    <span class="whitespace-nowrap" style="color: var(--text-primary)">{{ item.rec.work_date.strftime('%m-%d') }}
+        <span style="color: var(--text-muted)">{{ item.rec.work_date|weekday_long }}</span></span>
+    <span class="whitespace-nowrap" style="color: var(--text-secondary)">
+        {{ item.rec.clock_in.strftime('%H:%M') }} → {{ item.rec.clock_out.strftime('%H:%M') if item.rec.clock_out else '—' }}
+    </span>
+    <span class="px-1.5 py-0.5 rounded whitespace-nowrap"
+          style="{% if item.overtime %}background: rgba(0,0,0,0.04); color: #dc2626;{% else %}background: rgba(0,0,0,0.04); color: var(--text-muted);{% endif %}">
+        {% if item.overtime %}{{ t('work.overtime') }} {{ item.overtime|work_duration }}{% else %}{{ t('work.no_overtime') }}{% endif %}
+    </span>
+    <button hx-get="/api/work/history/{{ item.rec.work_date.isoformat() }}/edit"
+            hx-target="#{{ row_id }}"
+            hx-swap="outerHTML"
+            class="px-1 rounded transition-colors" style="color: var(--text-muted);"
+            title="{{ t('edit') }}">&#9998;</button>
+    <button hx-post="/api/work/history/{{ item.rec.work_date.isoformat() }}/delete"
+            hx-confirm="{{ t('confirm.work_day') }}"
+            hx-target="{% if item.rec.work_date == now.date() %}#work-clockin-card{% else %}#{{ row_id }}{% endif %}"
+            hx-swap="outerHTML"
+            class="px-1 rounded transition-colors" style="color: #dc2626;"
+            title="{{ t('delete') }}">&#10005;</button>
+</div>

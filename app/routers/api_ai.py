@@ -5,14 +5,15 @@ from fastapi import APIRouter, Depends, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from sqlalchemy.orm import Session
 
-from app.config import get_api_key, save_api_key, save_api_base
+from app.auth import get_current_user
 from app.database import get_db
+from app.i18n import tt
+from app.models.user import User
 from app.models.target import TargetMilestone
-from app.schemas.ai_schema import AISuggestRequest, SetKeyRequest
 from app.schemas.target_schema import TargetCreate
 from app.services.activity_service import log_action
 from app.services.activity_service import get_logs_by_date
-from app.services.ai_service import check_api_key, generate_daily_summary, refine_target, suggest_target
+from app.services.ai_service import generate_daily_summary, refine_target, suggest_target
 from app.services.target_service import create_target, update_target
 from app.templates import templates
 
@@ -28,47 +29,8 @@ def _import_to_priority(importance: int) -> int:
     return 3
 
 
-@router.get("/key-input", response_class=HTMLResponse)
-async def ai_key_input(request: Request):
-    """Return the API key input form fragment."""
-    return templates.TemplateResponse("components/api_key_input.html", {"request": request})
-
-
-@router.get("/status")
-async def ai_status():
-    """Check if AI is available (API key configured + working)."""
-    key = get_api_key()
-    if not key:
-        return {"available": False, "reason": "no_key"}
-    ok = check_api_key()
-    return {"available": ok}
-
-
-@router.post("/set-key", response_class=HTMLResponse)
-async def set_api_key(request: Request):
-    """Save API key and test it."""
-    form = await request.form()
-    api_key = form.get("api_key", "").strip()
-    api_base = form.get("api_base", "").strip()
-    if not api_key:
-        return HTMLResponse("<div class='text-red-500 text-sm'>API Key 不能为空</div>")
-
-    # Test the key
-    ok = check_api_key(api_key=api_key, base_url=api_base)
-    if not ok:
-        return HTMLResponse("<div class='text-red-500 text-sm'>API Key 无效或网络不可达，请检查</div>")
-
-    # Save key
-    save_api_key(api_key)
-    # Also persist api_base if provided
-    if api_base:
-        save_api_base(api_base)
-
-    return HTMLResponse("", headers={"HX-Trigger": '{"show-toast": {"message": "API Key saved! AI activated.", "type": "success"}, "settings-saved": {}}'})
-
-
 @router.post("/suggest-target", response_class=HTMLResponse)
-async def ai_suggest_target(request: Request):
+async def ai_suggest_target(request: Request, user: User = Depends(get_current_user)):
     """Generate AI suggestion for a target."""
     form = await request.form()
     title = form.get("title", "").strip()
@@ -76,22 +38,22 @@ async def ai_suggest_target(request: Request):
     target_id = form.get("target_id") or None
 
     if not title:
-        return HTMLResponse("<div class='text-red-500 text-sm'>请先输入目标名称</div>")
+        return HTMLResponse(f"<div class='text-red-500 text-sm'>{tt(request, 'ai.err_title')}</div>")
 
     try:
         suggestion = suggest_target(title, description)
-    except ValueError as e:
+    except ValueError:
         return HTMLResponse(
             f"<div class='text-amber-600 text-sm p-3 bg-amber-50 rounded-lg border border-amber-200'>"
-            f"AI not available: {e}. Click ⚙️ Settings in the navbar to configure an API Key."
+            f"{tt(request, 'ai.err_not_configured')}"
             f"</div>"
         )
     except Exception as e:
         return HTMLResponse(
-            f"<div class='text-red-500 text-sm p-3 bg-red-50 rounded-lg'>AI 调用失败: {str(e)[:100]}</div>"
+            f"<div class='text-red-500 text-sm p-3 bg-red-50 rounded-lg'>{tt(request, 'ai.err_call')}: {str(e)[:100]}</div>"
         )
 
-    return templates.TemplateResponse("targets/ai_suggestion.html", {
+    return templates.TemplateResponse(request, "targets/ai_suggestion.html", {
         "request": request,
         "suggestion": suggestion,
         "title": title,
@@ -102,7 +64,7 @@ async def ai_suggest_target(request: Request):
 
 
 @router.post("/refine-target", response_class=HTMLResponse)
-async def ai_refine_target(request: Request):
+async def ai_refine_target(request: Request, user: User = Depends(get_current_user)):
     """Refine suggestion based on user feedback."""
     form = await request.form()
     title = form.get("title", "").strip()
@@ -111,7 +73,7 @@ async def ai_refine_target(request: Request):
     target_id = form.get("target_id") or None
 
     if not feedback:
-        return HTMLResponse("<div class='text-red-500 text-sm'>请输入补充说明</div>")
+        return HTMLResponse(f"<div class='text-red-500 text-sm'>{tt(request, 'ai.err_feedback')}</div>")
 
     # Parse the original suggestion if provided
     original_suggestion = None
@@ -126,10 +88,10 @@ async def ai_refine_target(request: Request):
         suggestion = refine_target(title, feedback, description, original_suggestion=original_suggestion)
     except Exception as e:
         return HTMLResponse(
-            f"<div class='text-red-500 text-sm p-3 bg-red-50 rounded-lg'>AI 调用失败: {str(e)[:100]}</div>"
+            f"<div class='text-red-500 text-sm p-3 bg-red-50 rounded-lg'>{tt(request, 'ai.err_call')}: {str(e)[:100]}</div>"
         )
 
-    return templates.TemplateResponse("targets/ai_suggestion.html", {
+    return templates.TemplateResponse(request, "targets/ai_suggestion.html", {
         "request": request,
         "suggestion": suggestion,
         "title": title,
@@ -140,7 +102,7 @@ async def ai_refine_target(request: Request):
 
 
 @router.post("/accept-target")
-async def ai_accept_target(request: Request, db: Session = Depends(get_db)):
+async def ai_accept_target(request: Request, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
     """Accept AI suggestion and create or update the target."""
     form = await request.form()
     title = form.get("title", "").strip()
@@ -176,7 +138,7 @@ async def ai_accept_target(request: Request, db: Session = Depends(get_db)):
             priority=priority,
             deadline=deadline,
         )
-        t = update_target(db, int(target_id), data)
+        t = update_target(db, user.id, int(target_id), data)
         if not t:
             return HTMLResponse("Target not found", status_code=404)
 
@@ -199,7 +161,7 @@ async def ai_accept_target(request: Request, db: Session = Depends(get_db)):
         db.commit()
 
         type_label = {"deadline": "有期限", "short_term": "短期", "long_term": "长期"}.get(t.target_type, "短期")
-        log_action(db, "update_target", f"AI 更新了{type_label}目标「{t.title}」", target_type=t.target_type, target_id=t.id)
+        log_action(db, user.id, "update_target", f"AI 更新了{type_label}目标「{t.title}」", target_type=t.target_type, target_id=t.id)
         return RedirectResponse(url=f"/targets/{t.id}?ai_updated=1", status_code=303)
     else:
         # Create new target
@@ -210,7 +172,7 @@ async def ai_accept_target(request: Request, db: Session = Depends(get_db)):
             priority=priority,
             deadline=deadline,
         )
-        t = create_target(db, data)
+        t = create_target(db, user.id, data)
 
         for i, m in enumerate(milestones_data):
             milestone_date = None
@@ -229,12 +191,12 @@ async def ai_accept_target(request: Request, db: Session = Depends(get_db)):
         db.commit()
 
         type_label = {"deadline": "有期限", "short_term": "短期", "long_term": "长期"}.get(t.target_type, "短期")
-        log_action(db, "create_target", f"创建了{type_label}目标「{t.title}」(AI)", target_type=t.target_type, target_id=t.id)
+        log_action(db, user.id, "create_target", f"创建了{type_label}目标「{t.title}」(AI)", target_type=t.target_type, target_id=t.id)
         return RedirectResponse(url=f"/targets/{t.id}?ai_created=1", status_code=303)
 
 
 @router.post("/generate-daily-log", response_class=HTMLResponse)
-async def ai_generate_daily_log(request: Request, db: Session = Depends(get_db)):
+async def ai_generate_daily_log(request: Request, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
     """Generate a daily diary entry from today's activity logs."""
     form = await request.form()
     log_date_str = form.get("date", "").strip()
@@ -244,17 +206,17 @@ async def ai_generate_daily_log(request: Request, db: Session = Depends(get_db))
     except ValueError:
         log_date = date.today()
 
-    activities = get_logs_by_date(db, log_date)
+    activities = get_logs_by_date(db, user.id, log_date)
     descriptions = [a.description for a in activities]
 
     if not descriptions and not existing_content:
-        return HTMLResponse("今天还没有活动记录，先去完成一些任务吧！")
+        return HTMLResponse(tt(request, "ai.no_activity"))
 
     try:
         result = generate_daily_summary(descriptions, existing_content=existing_content)
     except ValueError:
-        return HTMLResponse("AI 未配置，请先在 ⚙️ 设置中配置 API Key")
+        return HTMLResponse(tt(request, "ai.err_not_configured"))
     except Exception as e:
-        return HTMLResponse(f"AI 调用失败: {str(e)[:80]}")
+        return HTMLResponse(f"{tt(request, 'ai.err_call')}: {str(e)[:80]}")
 
     return HTMLResponse(result)

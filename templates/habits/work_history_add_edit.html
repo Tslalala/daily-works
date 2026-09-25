@@ -1,0 +1,26 @@
+<div id="work-add-wrap" class="text-xs">
+    <div class="flex items-center justify-between mb-1">
+        <span style="color: var(--text-primary)">{{ t('work.add') }}</span>
+        <button hx-get="/api/work/history/add/row"
+                hx-target="#work-add-wrap"
+                hx-swap="outerHTML"
+                class="px-1" style="color: var(--text-muted);">{{ t('cancel') }}</button>
+    </div>
+    <form hx-post="/api/work/history/add"
+          hx-target="#work-clockin-card"
+          hx-swap="outerHTML" class="space-y-1.5">
+        <input type="date" name="work_date" value="{{ now.date().isoformat() }}" max="{{ now.date().isoformat() }}" required
+               class="w-full px-1.5 py-1 border rounded outline-none"
+               style="border-color: #e2e8f0; background: rgba(255,255,255,0.6);">
+        <div class="flex items-center gap-1.5">
+            <input type="time" name="clock_in" step="60" required
+                   class="flex-1 min-w-0 px-1.5 py-1 border rounded outline-none"
+                   style="border-color: #e2e8f0; background: rgba(255,255,255,0.6);">
+            <span style="color: var(--text-muted)">→</span>
+            <input type="time" name="clock_out" step="60"
+                   class="flex-1 min-w-0 px-1.5 py-1 border rounded outline-none"
+                   style="border-color: #e2e8f0; background: rgba(255,255,255,0.6);">
+            <button type="submit" class="px-2 py-1 rounded whitespace-nowrap" style="background: #ecfdf5; color: #059669;">{{ t('work.save') }}</button>
+        </div>
+    </form>
+</div>

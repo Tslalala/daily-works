@@ -1,15 +1,13 @@
-"""AI service for target suggestions using OpenAI-compatible API."""
+"""AI service for target suggestions using the fixed local OpenAI-compatible API."""
 import json
 import re
 from datetime import date
 
 from openai import OpenAI
 
-from app.config import get_api_base, get_api_key, save_api_key
+from app.config import AI_API_KEY, AI_BASE_URL, AI_MODEL
 
-DEFAULT_MODEL = "deepseek-chat"
-DEFAULT_BASE_URL = "https://api.deepseek.com"
-REQUEST_TIMEOUT = 15  # seconds
+REQUEST_TIMEOUT = 120  # seconds (the local model reasons before answering)
 
 SYSTEM_PROMPT = """你是一个目标管理助手。根据用户提供的目标标题和描述，生成结构化的目标建议。
 
@@ -28,23 +26,22 @@ SYSTEM_PROMPT = """你是一个目标管理助手。根据用户提供的目标�
 只返回 JSON，不要包含其他文字。"""
 
 
-def _call_llm(prompt: str, api_key: str = "", base_url: str = "", model: str = "") -> str:
-    """Call an OpenAI-compatible LLM and return the raw response text."""
-    key = api_key or get_api_key()
-    if not key:
-        raise ValueError("API key not configured")
-
-    client = OpenAI(api_key=key, base_url=base_url or get_api_base() or DEFAULT_BASE_URL, timeout=REQUEST_TIMEOUT)
+def _call_llm(prompt: str) -> str:
+    """Call the local OpenAI-compatible LLM and return the raw response text."""
+    client = OpenAI(api_key=AI_API_KEY, base_url=AI_BASE_URL, timeout=REQUEST_TIMEOUT)
     resp = client.chat.completions.create(
-        model=model or DEFAULT_MODEL,
+        model=AI_MODEL,
         messages=[
             {"role": "system", "content": SYSTEM_PROMPT.format(today=date.today().isoformat())},
             {"role": "user", "content": prompt},
         ],
         temperature=0.7,
-        max_tokens=800,
+        max_tokens=4000,
     )
-    return resp.choices[0].message.content or ""
+    content = resp.choices[0].message.content or ""
+    if not content.strip():
+        raise ValueError("AI returned an empty response")
+    return content
 
 
 def _parse_suggestion(raw: str) -> dict:
@@ -68,25 +65,6 @@ def _parse_suggestion(raw: str) -> dict:
         "deadline_suggestion": data.get("deadline_suggestion") or None,
         "milestones": milestones,
     }
-
-
-def check_api_key(api_key: str = "", base_url: str = "") -> bool:
-    """Check if the API key works by making a minimal request."""
-    try:
-        key = api_key or get_api_key()
-        if not key:
-            return False
-        model = DEFAULT_MODEL
-        base = base_url or get_api_base() or DEFAULT_BASE_URL
-        client = OpenAI(api_key=key, base_url=base, timeout=REQUEST_TIMEOUT)
-        resp = client.chat.completions.create(
-            model=model,
-            messages=[{"role": "user", "content": "OK"}],
-            max_tokens=1,
-        )
-        return bool(resp.choices)
-    except Exception:
-        return False
 
 
 DAILY_LOG_PROMPT = """你是一个个人日记助手。根据用户今天完成的以下活动，帮用户写一篇日记。
@@ -126,18 +104,14 @@ DAILY_LOG_APPEND_PROMPT = """用户已经写了一些日记内容草稿。请结
 请写完整的日记："""
 
 
-def generate_daily_summary(activities: list[str], existing_content: str = "", api_key: str = "", base_url: str = "", model: str = "") -> str:
+def generate_daily_summary(activities: list[str], existing_content: str = "") -> str:
     """Generate a daily diary entry from activity descriptions.
 
     If existing_content is provided, the AI integrates it with activities
     into a cohesive diary entry while preserving original meaning.
     Otherwise generates a fresh entry from activities only.
     """
-    key = api_key or get_api_key()
-    if not key:
-        raise ValueError("API key not configured")
-
-    client = OpenAI(api_key=key, base_url=base_url or get_api_base() or DEFAULT_BASE_URL, timeout=REQUEST_TIMEOUT)
+    client = OpenAI(api_key=AI_API_KEY, base_url=AI_BASE_URL, timeout=REQUEST_TIMEOUT)
     activities_text = "\n".join(f"- {a}" for a in activities) if activities else "今天没有特别的活动记录。"
 
     if existing_content:
@@ -146,27 +120,29 @@ def generate_daily_summary(activities: list[str], existing_content: str = "", ap
         prompt = DAILY_LOG_PROMPT.format(activities=activities_text)
 
     resp = client.chat.completions.create(
-        model=model or DEFAULT_MODEL,
+        model=AI_MODEL,
         messages=[
             {"role": "system", "content": "你是一个日记助手。请用中文回复，语气平淡自然。"},
             {"role": "user", "content": prompt},
         ],
         temperature=0.7,
-        max_tokens=500,
+        max_tokens=3000,
     )
-    new_content = resp.choices[0].message.content or ""
+    new_content = (resp.choices[0].message.content or "").strip()
+    if not new_content:
+        raise ValueError("AI returned an empty response")
     return new_content  # full combined diary entry (AI handles integration of existing + new)
 
 
-def suggest_target(title: str, description: str = "", api_key: str = "", base_url: str = "", model: str = "") -> dict:
+def suggest_target(title: str, description: str = "") -> dict:
     """Generate an AI suggestion for a target."""
     desc_text = f"\n描述：{description}" if description else ""
     prompt = f"目标标题：{title}{desc_text}\n\n请分析这个目标并给出建议。"
-    raw = _call_llm(prompt, api_key=api_key, base_url=base_url, model=model)
+    raw = _call_llm(prompt)
     return _parse_suggestion(raw)
 
 
-def refine_target(title: str, feedback: str, description: str = "", original_suggestion: dict = None, api_key: str = "", base_url: str = "", model: str = "") -> dict:
+def refine_target(title: str, feedback: str, description: str = "", original_suggestion: dict = None) -> dict:
     """Refine a previous suggestion based on user feedback."""
     desc_text = f"\n描述：{description}" if description else ""
 
@@ -180,5 +156,5 @@ def refine_target(title: str, feedback: str, description: str = "", original_sug
         f"用户的补充意见：{feedback}\n\n"
         f"请根据用户的反馈重新分析并更新建议。用户可能想调整类型、时间、重要度或拆分方式。"
     )
-    raw = _call_llm(prompt, api_key=api_key, base_url=base_url, model=model)
+    raw = _call_llm(prompt)
     return _parse_suggestion(raw)

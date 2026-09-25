@@ -1,0 +1,29 @@
+{% extends "layout.html" %}
+{% block title %}{{ t('auth.account_title') }} - Daily Planner{% endblock %}
+{% block content %}
+<div class="max-w-md mx-auto">
+    <div class="flex items-center justify-between mb-6">
+        <h1 class="text-xl font-bold" style="color: var(--text-primary)">{{ t('auth.account_title') }}</h1>
+        <span class="text-sm" style="color: var(--primary); font-weight: 600;">{{ user.username }}</span>
+    </div>
+
+    <div class="glass-card p-6">
+        <p class="text-sm mb-4" style="color: var(--text-muted)">
+            {{ t('auth.username') }}：{{ user.username }}
+        </p>
+        {% if changed %}
+            <p class="text-sm mb-4" style="color: #059669;" data-auto-dismiss>{{ t('auth.password_changed') }}</p>
+        {% endif %}
+        <form method="post" action="/account/password">
+            <label class="auth-label">{{ t('auth.old_password') }}</label>
+            <input type="password" name="old_password" required autocomplete="current-password">
+            <label class="auth-label">{{ t('auth.new_password') }}</label>
+            <input type="password" name="password" required minlength="6" autocomplete="new-password">
+            <label class="auth-label">{{ t('auth.password_confirm') }}</label>
+            <input type="password" name="password2" required minlength="6" autocomplete="new-password">
+            {% if error %}<p class="auth-error">{{ error }}</p>{% endif %}
+            <button type="submit" class="btn-primary auth-submit">{{ t('auth.change_password') }}</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -11,6 +11,7 @@ class Target(Base):
     __tablename__ = "targets"
 
     id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
     title = Column(String(200), nullable=False)
     description = Column(Text, nullable=True)
     target_type = Column(String(20), nullable=False, default="short_term")  # deadline / long_term / short_term

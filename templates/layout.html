@@ -1,376 +1,280 @@
 <!DOCTYPE html>
-<html lang="zh-CN" x-data="themeManager()" x-init="init()" :data-theme="theme">
+<html lang="zh-CN" x-data="appearance()" x-init="init()" :data-theme="theme">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Daily Planner{% endblock %}</title>
     <script>
-        // Synchronously set theme BEFORE any rendering to prevent color flash
+        // Synchronously apply theme + wallpaper BEFORE any rendering to prevent flash
         (function() {
+            var root = document.documentElement;
             var theme = localStorage.getItem('theme');
-            if (theme) document.documentElement.setAttribute('data-theme', theme);
+            var MIGRATE = { green: 'moss', gold: 'amber', wine: 'plum', slate: 'charcoal', purple: 'violet' };
+            if (theme && MIGRATE[theme]) {
+                theme = MIGRATE[theme];
+                localStorage.setItem('theme', theme);
+            }
+            if (theme) root.setAttribute('data-theme', theme);
+            function shade(hex, f) {
+                var n = parseInt(hex.slice(1), 16), r = n >> 16, g = (n >> 8) & 255, b = n & 255;
+                r = Math.max(0, Math.min(255, Math.round(f < 0 ? r * (1 + f) : r + (255 - r) * f)));
+                g = Math.max(0, Math.min(255, Math.round(f < 0 ? g * (1 + f) : g + (255 - g) * f)));
+                b = Math.max(0, Math.min(255, Math.round(f < 0 ? b * (1 + f) : b + (255 - b) * f)));
+                return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+            }
+            if (theme === 'custom') {
+                var c = localStorage.getItem('dw-custom-color');
+                if (c) {
+                    root.style.setProperty('--primary', c);
+                    root.style.setProperty('--primary-dark', shade(c, -0.25));
+                    root.style.setProperty('--primary-light', shade(c, 0.45));
+                    root.style.setProperty('--primary-bg', shade(c, 0.86));
+                    root.style.setProperty('--primary-subtle', shade(c, 0.86));
+                }
+            }
+            try {
+                var s = JSON.parse(localStorage.getItem('dw-appearance') || 'null');
+                if (s && s.wallpaper && s.wallpaper !== 'none') {
+                    root.style.setProperty('--wallpaper', "url('/wallpapers/" + s.wallpaper + "')");
+                    root.style.setProperty('--wallpaper-opacity', String(typeof s.opacity === 'number' ? s.opacity : 0.38));
+                    root.style.setProperty('--wallpaper-blur', (typeof s.blur === 'number' ? s.blur : 3) + 'px');
+                }
+            } catch (e) {}
         })();
     </script>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/htmx.org@2.0.4"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    <style>
-        /* ===== Glassmorphism Base ===== */
-        :root {
-            --primary: #6366f1;
-            --primary-dark: #4f46e5;
-            --primary-light: #a5b4fc;
-            --primary-bg: #eef2ff;
-            --primary-subtle: rgba(99,102,241,0.08);
-            --glass-bg: rgba(255,255,255,0.65);
-            --glass-border: rgba(255,255,255,0.7);
-            --glass-shadow: 0 8px 32px rgba(0,0,0,0.04);
-            --glass-hover-shadow: 0 8px 40px rgba(0,0,0,0.08);
-            --body-bg: #f0eeff;
-            --body-gradient: linear-gradient(135deg, #f0eeff 0%, #f8f7ff 50%, #f0f2ff 100%);
-            --nav-bg: rgba(255,255,255,0.72);
-            --text-primary: #1e293b;
-            --text-secondary: #64748b;
-            --text-muted: #94a3b8;
-        }
-
-        /* ===== Color Themes ===== */
-        [data-theme="blue"] {
-            --primary: #3b82f6;
-            --primary-dark: #2563eb;
-            --primary-light: #93c5fd;
-            --primary-bg: #eff6ff;
-            --primary-subtle: rgba(59,130,246,0.08);
-            --body-bg: #eef4ff;
-            --body-gradient: linear-gradient(135deg, #eef4ff 0%, #f5f8ff 50%, #eef2ff 100%);
-        }
-        [data-theme="teal"] {
-            --primary: #14b8a6;
-            --primary-dark: #0d9488;
-            --primary-light: #5eead4;
-            --primary-bg: #f0fdfa;
-            --primary-subtle: rgba(20,185,166,0.08);
-            --body-bg: #ecfdf8;
-            --body-gradient: linear-gradient(135deg, #ecfdf8 0%, #f4fdfb 50%, #ecfdf5 100%);
-        }
-        [data-theme="green"] {
-            --primary: #10b981;
-            --primary-dark: #059669;
-            --primary-light: #6ee7b7;
-            --primary-bg: #ecfdf5;
-            --primary-subtle: rgba(16,185,129,0.08);
-            --body-bg: #ecfdf3;
-            --body-gradient: linear-gradient(135deg, #ecfdf3 0%, #f4fdf7 50%, #ecfdef 100%);
-        }
-        [data-theme="orange"] {
-            --primary: #f97316;
-            --primary-dark: #ea580c;
-            --primary-light: #fdba74;
-            --primary-bg: #fff7ed;
-            --primary-subtle: rgba(249,115,22,0.08);
-            --body-bg: #fff7ed;
-            --body-gradient: linear-gradient(135deg, #fff7ed 0%, #fffaf0 50%, #fff5eb 100%);
-        }
-        [data-theme="rose"] {
-            --primary: #f43f5e;
-            --primary-dark: #e11d48;
-            --primary-light: #fda4af;
-            --primary-bg: #fff1f2;
-            --primary-subtle: rgba(244,63,94,0.08);
-            --body-bg: #fff0f2;
-            --body-gradient: linear-gradient(135deg, #fff0f2 0%, #fff5f6 50%, #fff0f4 100%);
-        }
-        [data-theme="purple"] {
-            --primary: #8b5cf6;
-            --primary-dark: #7c3aed;
-            --primary-light: #c4b5fd;
-            --primary-bg: #f5f3ff;
-            --primary-subtle: rgba(139,92,246,0.08);
-            --body-bg: #f3f0ff;
-            --body-gradient: linear-gradient(135deg, #f3f0ff 0%, #f8f5ff 50%, #f3f0fe 100%);
-        }
-        [data-theme="slate"] {
-            --primary: #64748b;
-            --primary-dark: #475569;
-            --primary-light: #94a3b8;
-            --primary-bg: #f1f5f9;
-            --primary-subtle: rgba(100,116,139,0.08);
-            --body-bg: #f4f6f8;
-            --body-gradient: linear-gradient(135deg, #f4f6f8 0%, #f8f9fa 50%, #f4f6f9 100%);
-        }
-
-        /* ===== Glass Card ===== */
-        .glass-card {
-            background: var(--glass-bg);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid var(--glass-border);
-            border-radius: 16px;
-            box-shadow: var(--glass-shadow);
-            transition: box-shadow 0.2s ease, transform 0.2s ease;
-        }
-        .glass-card:hover {
-            box-shadow: var(--glass-hover-shadow);
-        }
-        .glass-card-static {
-            background: var(--glass-bg);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid var(--glass-border);
-            border-radius: 16px;
-            box-shadow: var(--glass-shadow);
-        }
-
-        /* ===== Button Primary ===== */
-        .btn-primary {
-            background: var(--primary);
-            color: white;
-            border-radius: 10px;
-            padding: 0.5rem 1rem;
-            font-size: 0.875rem;
-            font-weight: 500;
-            transition: opacity 0.2s, transform 0.1s;
-            border: none;
-            cursor: pointer;
-            display: inline-block;
-            text-decoration: none;
-            line-height: 1.4;
-        }
-        .btn-primary:hover { opacity: 0.9; }
-        .btn-primary:active { transform: scale(0.97); opacity: 0.85; }
-        .btn-primary:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
-        .btn-primary:focus { outline: none; }
-        .btn-ghost {
-            background: var(--primary-subtle);
-            color: var(--primary);
-            border-radius: 10px;
-            padding: 0.375rem 0.75rem;
-            font-size: 0.875rem;
-            font-weight: 500;
-            transition: background 0.2s;
-        }
-        .btn-ghost:hover {
-            background: var(--primary-bg);
-        }
-
-        /* ===== Accent helpers ===== */
-        .accent-text { color: var(--primary); }
-        .accent-bg { background: var(--primary); }
-        .accent-bg-light { background: var(--primary-bg); }
-        .accent-subtle { background: var(--primary-subtle); }
-        .accent-ring:focus { ring-color: var(--primary-light); }
-        [x-cloak] { display: none !important; }
-
-        /* ===== Body & Nav ===== */
-        body {
-            background: var(--body-gradient);
-            min-height: 100vh;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        }
-        nav {
-            background: var(--nav-bg);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(255,255,255,0.8);
-            position: sticky;
-            top: 0;
-            z-index: 40;
-        }
-        .nav-link {
-            color: var(--text-secondary);
-            transition: color 0.15s, background 0.15s;
-            border-radius: 8px;
-        }
-        .nav-link:hover {
-            color: var(--text-primary);
-            background: var(--primary-subtle);
-        }
-        .nav-link-active {
-            color: var(--primary);
-            background: var(--primary-subtle);
-            font-weight: 600;
-        }
-
-        /* ===== App title ===== */
-        .app-title { color: var(--primary); }
-
-        /* ===== Scrollbar ===== */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.08); border-radius: 3px; }
-
-        /* ===== HTMX loading ===== */
-        .htmx-indicator { opacity: 0; transition: opacity 0.2s; }
-        .htmx-request .htmx-indicator { opacity: 1; }
-        .htmx-request.htmx-indicator { opacity: 1; }
-
-        /* ===== Transitions ===== */
-        .fade-out { transition: opacity 0.5s; }
-        [x-cloak] { display: none !important; }
-    </style>
+    <script src="/static/vendor/tailwind.js"></script>
+    <script defer src="/static/vendor/htmx.min.js"></script>
+    <script defer src="/static/vendor/alpine.min.js"></script>
+    <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+    <link rel="stylesheet" href="/static/editorial.css?v={{ css_version }}">
 </head>
 <body>
-    <nav>
+    <nav class="site-nav">
         <div class="max-w-6xl mx-auto px-4">
             <div class="flex items-center justify-between h-14">
                 <div class="flex items-center space-x-1">
-                    <a href="/" class="text-xl font-bold app-title">📋 Planner</a>
-                    <div class="ml-6 flex space-x-1">
+                    <a href="/" class="app-title">Daily Works<span class="brand-mark">.</span></a>
+                    <div class="ml-6 flex space-x-1 nav-links">
                         <a href="/"
                            class="nav-link px-3 py-2 text-sm font-medium transition-colors
                                   {% if request.url.path == '/' %}nav-link-active{% endif %}">
-                            仪表盘
+                            {{ t('nav.dashboard') }}
                         </a>
                         <a href="/targets"
                            class="nav-link px-3 py-2 text-sm font-medium transition-colors
                                   {% if request.url.path.startswith('/targets') %}nav-link-active{% endif %}">
-                            目标
+                            {{ t('nav.targets') }}
                         </a>
                         <a href="/habits"
                            class="nav-link px-3 py-2 text-sm font-medium transition-colors
                                   {% if request.url.path.startswith('/habits') %}nav-link-active{% endif %}">
-                            习惯打卡
+                            {{ t('nav.habits') }}
                         </a>
                         <a href="/daily-log"
                            class="nav-link px-3 py-2 text-sm font-medium transition-colors
                                   {% if request.url.path.startswith('/daily-log') %}nav-link-active{% endif %}">
-                            每日日志
+                            {{ t('nav.dlog') }}
                         </a>
                     </div>
                 </div>
                 <div class="flex items-center gap-3">
-                    <span class="text-sm" style="color: var(--text-muted)">{{ now.strftime('%Y-%m-%d %A') if now else '' }}</span>
-                    <button @click="settingsOpen = true"
-                            class="text-lg leading-none transition-colors"
-                            style="color: var(--text-muted)"
-                            title="设置">
-                        ⚙️
-                    </button>
+                    <span class="text-sm" style="color: var(--text-muted)">{{ now.strftime('%Y-%m-%d') }} {{ now|weekday_long }}</span>
+                    {% if user %}
+                        <a href="/account" class="text-sm font-medium" style="color: var(--primary)">{{ user.username }}</a>
+                        <form method="post" action="/logout" class="inline-flex">
+                            <button type="submit" class="btn-ghost text-xs px-3 py-1.5">{{ t('auth.logout') }}</button>
+                        </form>
+                    {% endif %}
                 </div>
             </div>
         </div>
     </nav>
 
-    <main class="max-w-6xl mx-auto px-4 py-6">
+    <main class="site-page max-w-6xl mx-auto px-4 py-6">
         {% block content %}{% endblock %}
     </main>
 
-    <!-- Settings Modal -->
-    <div x-show="settingsOpen" x-cloak
-         class="fixed inset-0 z-50 flex items-center justify-center"
+    <!-- Appearance trigger (floating, bottom-right) -->
+    <button @click="settingsOpen = !settingsOpen" class="ap-trigger">
+        &#9684; {{ t('settings.trigger') }}
+    </button>
+
+    <!-- Appearance panel (closes with a shrink animation when clicking outside) -->
+    <div x-cloak
+         class="ap-panel"
+         :class="{ open: settingsOpen }"
+         @click.outside="if (!$event.target.closest('.ap-trigger')) settingsOpen = false"
          @keydown.escape.window="settingsOpen = false">
-        <div @click="settingsOpen = false" class="absolute inset-0" style="background: rgba(0,0,0,0.3); backdrop-filter: blur(4px);"></div>
-        <div @click.stop="" class="relative glass-card-static p-6 w-full max-w-md mx-4">
-            <div class="flex items-center justify-between mb-4">
-                <h2 class="text-lg font-bold" style="color: var(--text-primary)">⚙️ 设置</h2>
-                <button @click="settingsOpen = false"
-                        class="text-lg leading-none transition-colors"
-                        style="color: var(--text-muted)">&times;</button>
-            </div>
+        <button @click="settingsOpen = false" class="ap-close" aria-label="Close">&times;</button>
+        <div class="eyebrow">{{ t('settings.eyebrow') }}</div>
+        <h2>{{ t('settings.heading') }}</h2>
+        <p>{{ t('settings.desc') }}</p>
 
-            <div class="space-y-4">
-                <!-- API Key Section -->
-                <div class="glass-card-static p-4">
-                    <h3 class="text-sm font-semibold mb-3" style="color: var(--text-primary)">🔑 AI API 配置</h3>
-                    <p class="text-xs mb-3" style="color: var(--text-muted)">配置后可使用 AI 智能建议功能。支持 DeepSeek、Qwen 等兼容 OpenAI API 的服务。</p>
-
-                    <form hx-post="/api/ai/set-key"
-                          hx-target="#settings-status"
-                          class="space-y-3">
-                        <div>
-                            <label class="text-xs font-medium" style="color: var(--text-secondary)">API Key</label>
-                            <input type="password" name="api_key" required
-                                   class="w-full px-3 py-2 border rounded-lg text-sm outline-none transition-shadow"
-                                   style="border-color: #e2e8f0; background: rgba(255,255,255,0.5);"
-                                   placeholder="sk-...">
-                        </div>
-                        <div>
-                            <label class="text-xs font-medium" style="color: var(--text-secondary)">API Base URL（可选）</label>
-                            <input type="text" name="api_base"
-                                   class="w-full px-3 py-2 border rounded-lg text-sm outline-none transition-shadow"
-                                   style="border-color: #e2e8f0; background: rgba(255,255,255,0.5);"
-                                   placeholder="https://api.deepseek.com">
-                            <p class="text-xs mt-1" style="color: var(--text-muted)">默认: DeepSeek。Qwen 填 https://dashscope.aliyuncs.com/compatible-mode/v1</p>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <button type="submit" class="btn-primary text-xs px-3 py-1.5">
-                                保存并验证
-                            </button>
-                            <span id="settings-loading" class="htmx-indicator text-xs" style="color: var(--text-muted)">
-                                <span class="inline-block animate-pulse">验证中...</span>
-                            </span>
-                            <span class="text-xs" style="color: var(--text-muted)">Key 仅保存在本地文件</span>
-                        </div>
-                        <div id="settings-status"></div>
-                    </form>
-                </div>
-
-                <!-- Color Theme Section -->
-                <div class="glass-card-static p-4">
-                    <h3 class="text-sm font-semibold mb-3" style="color: var(--text-primary)">🎨 界面主题</h3>
-                    <div class="flex items-center gap-3">
-                        <template x-for="t in themes" :key="t.id">
-                            <button @click="setTheme(t.id)"
-                                    class="w-8 h-8 rounded-full flex items-center justify-center transition-transform hover:scale-110"
-                                    :style="{ background: t.color }"
-                                    :title="t.label"
-                                    :class="theme === t.id ? 'ring-2 ring-offset-2' : ''"
-                                    :style="theme === t.id ? `background: ${t.color}; ring-color: ${t.color}` : `background: ${t.color}`">
-                                <span x-show="theme === t.id" class="text-white text-xs font-bold">✓</span>
-                            </button>
-                        </template>
-                    </div>
-                </div>
-            </div>
+        <!-- Wallpaper -->
+        <label class="ap-label">{{ t('settings.wallpaper') }}</label>
+        <div class="swatches">
+            {% for w in ["none", "2.jpeg", "3.jpeg", "4.jpeg", "5.jpeg", "6.jpeg", "7.png", "8.png", "9.png", "10.png"] %}
+            <button type="button"
+                    @click="setWallpaper('{{ w }}')"
+                    :class="'swatch' + (wallpaper === '{{ w }}' ? ' selected' : '')"
+                    {% if w == 'none' %}style="background-color: #fffdf9;"{% else %}:style="'background-image:url(&quot;/wallpapers/thumbs/{{ w.split('.')[0] }}.jpg&quot;)'"{% endif %}
+                    :aria-label="{{ t('settings.plain') if w == 'none' else w }}">
+                {% if w == 'none' %}<span>{{ t('settings.plain') }}</span>{% endif %}
+            </button>
+            {% endfor %}
         </div>
+        <label class="ap-label">{{ t('settings.opacity') }}
+            <input type="range" min="0" max="0.8" step="0.05" x-model.number="opacity" @input="applyWallpaper()">
+        </label>
+        <label class="ap-label">{{ t('settings.blur') }}
+            <input type="range" min="0" max="18" step="1" x-model.number="blur" @input="applyWallpaper()">
+        </label>
+
+        <hr class="ap-div">
+
+        <!-- Color theme -->
+        <label class="ap-label">{{ t('settings.color') }}</label>
+        <div class="ap-colors">
+            <template x-for="th in themes" :key="th.id">
+                <button type="button" @click="setTheme(th.id)"
+                        :class="'ap-color' + (theme === th.id ? ' selected' : '')"
+                        :style="'background:' + th.color" :title="th.id"></button>
+            </template>
+            <button type="button" @click="$refs.customColor.click()"
+                    :class="'ap-color ap-custom' + (theme === 'custom' ? ' selected' : '')"
+                    :style="theme === 'custom' ? 'background:' + customColor : ''"
+                    :title="theme === 'custom' ? customColor : 'custom'"
+                    x-text="theme === 'custom' ? 'OK' : '+'"></button>
+            <input type="color" x-ref="customColor" class="ap-custom-input"
+                   :value="customColor" @input="pickCustomColor($event.target.value)">
+        </div>
+
+        <hr class="ap-div">
+
+        <!-- Language -->
+        <label class="ap-label">{{ t('settings.lang') }}</label>
+        <form method="post" action="/api/settings/lang" class="ap-lang" id="lang-form">
+            <button type="submit" name="lang" value="zh" class="{% if lang == 'zh' %}active{% endif %}">中文</button>
+            <button type="submit" name="lang" value="en" class="{% if lang == 'en' %}active{% endif %}">English</button>
+        </form>
+
     </div>
 
-    <!-- Toast Container -->
-    <div id="toast-container" class="fixed top-20 right-4 z-50 flex flex-col space-y-2" x-data="{ toasts: [] }">
-        <template x-for="(toast, i) in toasts" :key="i">
-            <div x-show="toast.show" x-transition.duration.300ms
-                 class="px-4 py-3 rounded-xl shadow-lg text-white text-sm max-w-sm backdrop-blur-sm"
-                 :style="{ background: toast.type === 'success' ? 'var(--primary)' : toast.type === 'error' ? '#ef4444' : '#3b82f6' }"
-                 x-init="setTimeout(() => { toast.show = false; setTimeout(() => toasts.splice(i, 1), 300); }, 3000)"
-                 x-text="toast.message">
-            </div>
-        </template>
-    </div>
+    <!-- Toast Container (plain JS: no framework dependency) -->
+    <div id="toast-container" class="fixed top-20 right-4 z-50 flex flex-col space-y-2"></div>
 
     <script>
-        // Theme manager
-        function themeManager() {
+        // Appearance manager: color theme + wallpaper (visibility & glass blur)
+        function appearance() {
             return {
-                theme: localStorage.getItem('theme') || 'indigo',
                 settingsOpen: false,
+                theme: localStorage.getItem('theme') || 'indigo',
+                customColor: localStorage.getItem('dw-custom-color') || '#c74440',
+                wallpaper: '2.jpeg',
+                opacity: 0.38,
+                blur: 3,
+                wallpapers: ['none', '2.jpeg', '3.jpeg', '4.jpeg', '5.jpeg', '6.jpeg', '7.png', '8.png', '9.png', '10.png'],
                 themes: [
-                    { id: 'indigo', label: '靛蓝', color: '#6366f1' },
-                    { id: 'blue', label: '天空蓝', color: '#3b82f6' },
-                    { id: 'teal', label: '青绿', color: '#14b8a6' },
-                    { id: 'green', label: '翡翠绿', color: '#10b981' },
-                    { id: 'orange', label: '活力橙', color: '#f97316' },
-                    { id: 'rose', label: '玫瑰粉', color: '#f43f5e' },
-                    { id: 'purple', label: '紫罗兰', color: '#8b5cf6' },
-                    { id: 'slate', label: '石墨灰', color: '#64748b' },
+                    { id: 'indigo', label: 'Indigo', color: '#37665a' },
+                    { id: 'teal', label: 'Teal', color: '#0f7f7a' },
+                    { id: 'cyan', label: 'Cyan', color: '#1878a8' },
+                    { id: 'blue', label: 'Blue', color: '#2f66c9' },
+                    { id: 'navy', label: 'Navy', color: '#2c3f8f' },
+                    { id: 'cobalt', label: 'Cobalt', color: '#4f46b8' },
+                    { id: 'violet', label: 'Violet', color: '#7a4fd0' },
+                    { id: 'plum', label: 'Plum', color: '#a03aa0' },
+                    { id: 'magenta', label: 'Magenta', color: '#c43d8f' },
+                    { id: 'rose', label: 'Rose', color: '#d14b6a' },
+                    { id: 'red', label: 'Red', color: '#c74440' },
+                    { id: 'orange', label: 'Orange', color: '#d2691e' },
+                    { id: 'amber', label: 'Amber', color: '#c99a1f' },
+                    { id: 'olive', label: 'Olive', color: '#8f8f2e' },
+                    { id: 'moss', label: 'Moss', color: '#6b8f33' },
+                    { id: 'brown', label: 'Brown', color: '#8a5a33' },
+                    { id: 'charcoal', label: 'Charcoal', color: '#3d4347' }
                 ],
                 init() {
+                    var MIGRATE = { green: 'moss', gold: 'amber', wine: 'plum', slate: 'charcoal', purple: 'violet' };
+                    if (MIGRATE[this.theme]) this.theme = MIGRATE[this.theme];
+                    try {
+                        var s = JSON.parse(localStorage.getItem('dw-appearance') || 'null');
+                        if (s) {
+                            if (typeof s.wallpaper === 'string') this.wallpaper = s.wallpaper;
+                            if (typeof s.opacity === 'number') this.opacity = s.opacity;
+                            if (typeof s.blur === 'number') this.blur = s.blur;
+                        }
+                    } catch (e) {}
+                    this.applyTheme();
+                    this.applyWallpaper();
+                },
+                shade(hex, f) {
+                    var n = parseInt(hex.slice(1), 16), r = n >> 16, g = (n >> 8) & 255, b = n & 255;
+                    r = Math.max(0, Math.min(255, Math.round(f < 0 ? r * (1 + f) : r + (255 - r) * f)));
+                    g = Math.max(0, Math.min(255, Math.round(f < 0 ? g * (1 + f) : g + (255 - g) * f)));
+                    b = Math.max(0, Math.min(255, Math.round(f < 0 ? b * (1 + f) : b + (255 - b) * f)));
+                    return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+                },
+                applyTheme() {
                     document.documentElement.dataset.theme = this.theme;
+                    localStorage.setItem('theme', this.theme);
+                    this.applyCustomVars();
+                },
+                applyCustomVars() {
+                    var el = document.documentElement;
+                    if (this.theme === 'custom') {
+                        el.style.setProperty('--primary', this.customColor);
+                        el.style.setProperty('--primary-dark', this.shade(this.customColor, -0.25));
+                        el.style.setProperty('--primary-light', this.shade(this.customColor, 0.45));
+                        el.style.setProperty('--primary-bg', this.shade(this.customColor, 0.86));
+                        el.style.setProperty('--primary-subtle', this.shade(this.customColor, 0.86));
+                    } else {
+                        var vars = ['--primary', '--primary-dark', '--primary-light', '--primary-bg', '--primary-subtle'];
+                        for (var i = 0; i < vars.length; i++) el.style.removeProperty(vars[i]);
+                    }
                 },
                 setTheme(id) {
                     this.theme = id;
-                    localStorage.setItem('theme', id);
-                    document.documentElement.dataset.theme = id;
+                    this.applyTheme();
+                },
+                pickCustomColor(color) {
+                    this.customColor = color;
+                    localStorage.setItem('dw-custom-color', color);
+                    this.setTheme('custom');
+                },
+                setWallpaper(w) {
+                    this.wallpaper = w;
+                    this.applyWallpaper();
+                },
+                applyWallpaper() {
+                    var el = document.documentElement;
+                    el.style.setProperty('--wallpaper', this.wallpaper === 'none' ? 'none' : "url('/wallpapers/" + this.wallpaper + "')");
+                    el.style.setProperty('--wallpaper-opacity', String(this.wallpaper === 'none' ? 0 : this.opacity));
+                    el.style.setProperty('--wallpaper-blur', this.blur + 'px');
+                    localStorage.setItem('dw-appearance', JSON.stringify({
+                        wallpaper: this.wallpaper, opacity: this.opacity, blur: this.blur
+                    }));
                 }
             };
         }
 
-        // Toast listener
+        // Toast listener (framework-free)
         document.body.addEventListener('show-toast', function(evt) {
             const detail = typeof evt.detail === 'string' ? { message: evt.detail, type: 'success' } : evt.detail;
             const container = document.getElementById('toast-container');
-            if (container && container.__x) {
-                container.__x.$data.toasts.push({ show: true, message: detail.message, type: detail.type || 'success' });
-            }
+            if (!container) return;
+            const el = document.createElement('div');
+            el.className = 'px-4 py-3 rounded-xl shadow-lg text-white text-sm max-w-sm backdrop-blur-sm';
+            el.style.background = detail.type === 'error' ? '#ef4444' : (detail.type === 'info' ? '#3b82f6' : 'var(--primary)');
+            el.textContent = detail.message;
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(-6px)';
+            el.style.transition = 'opacity .25s ease, transform .25s ease';
+            container.appendChild(el);
+            requestAnimationFrame(function() { el.style.opacity = '1'; el.style.transform = 'none'; });
+            setTimeout(function() {
+                el.style.opacity = '0';
+                setTimeout(function() { el.remove(); }, 250);
+            }, 3000);
         });
 
         // Auto-dismiss flash messages
@@ -379,6 +283,33 @@
                 setTimeout(function() { el.remove(); }, 3000);
             });
         });
+
+        // Session guard: any htmx call that hits a 401 (expired/missing login)
+        // sends the whole page back to the login screen.
+        document.body.addEventListener('htmx:responseEvent', function(evt) {
+            var xhr = evt.detail && evt.detail.xhr;
+            if (xhr && xhr.status === 401) {
+                window.location.href = '/login?next=' + encodeURIComponent(window.location.pathname + window.location.search);
+            }
+        });
+
+        // Language switch: fetch + reload stays on the current page without
+        // depending on the Referer header of a 303 redirect. The native form
+        // POST below remains the fallback when JS is unavailable.
+        (function() {
+            var form = document.getElementById('lang-form');
+            if (!form) return;
+            form.addEventListener('submit', function(ev) {
+                var lang = ev.submitter && ev.submitter.value;
+                if (!lang) return;
+                ev.preventDefault();
+                fetch('/api/settings/lang', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: 'lang=' + encodeURIComponent(lang)
+                }).then(function() { location.reload(); });
+            });
+        })();
     </script>
 </body>
 </html>

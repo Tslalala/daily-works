@@ -10,10 +10,11 @@ class Habit(Base):
     __tablename__ = "habits"
 
     id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
     name = Column(String(200), nullable=False)
     description = Column(Text, nullable=True)
     frequency = Column(String(20), default="daily")  # daily / weekly
-    icon = Column(String(50), default="📌")
+    icon = Column(String(50), default="")
     status = Column(String(20), default="active")  # active / archived
     created_at = Column(DateTime, default=datetime.now)
     updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)

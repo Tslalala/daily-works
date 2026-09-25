@@ -1,10 +1,10 @@
 {% extends "layout.html" %}
-{% block title %}每日日志 - Daily Planner{% endblock %}
+{% block title %}{{ t('dlog.title') }} - Daily Planner{% endblock %}
 {% block content %}
 <div class="flex items-center justify-between mb-6">
-    <h1 class="text-xl font-bold" style="color: var(--text-primary)">📝 每日日志</h1>
-    <a href="/daily-log/today" class="btn-primary">
-        写今天日志
+    <h1 class="text-xl font-bold" style="color: var(--text-primary)">{{ t('dlog.title') }}</h1>
+    <a href="/daily-log/today" class="btn-primary text-2xl px-8 py-2">
+        {{ t('dlog.write_today') }}
     </a>
 </div>
 
@@ -15,32 +15,26 @@
                 <div class="flex items-center justify-between mb-1">
                     <div class="flex items-center gap-2">
                         <span class="text-sm font-medium" style="color: var(--text-primary)">{{ log.log_date.strftime('%Y-%m-%d') }}</span>
-                        <span class="text-xs" style="color: var(--text-muted)">{{ log.log_date.strftime('%A') }}</span>
+                        <span class="text-xs" style="color: var(--text-muted)">{{ log.log_date|weekday_long }}</span>
                     </div>
                     {% if log.mood %}
-                        <span class="text-sm">
-                            {% if log.mood == 'great' %}😄
-                            {% elif log.mood == 'good' %}🙂
-                            {% elif log.mood == 'neutral' %}😐
-                            {% elif log.mood == 'bad' %}😔
-                            {% elif log.mood == 'awful' %}😢
-                            {% endif %}
+                        <span class="text-xs" style="color: var(--text-secondary);">
+                            <span class="mood-dot" style="background: {% if log.mood == 'great' %}#4f7148{% elif log.mood == 'good' %}#7a9168{% elif log.mood == 'neutral' %}#73746e{% elif log.mood == 'bad' %}#a46438{% else %}#a05a66{% endif %};"></span>{{ t('mood.' ~ log.mood) }}
                         </span>
                     {% endif %}
                 </div>
                 {% if log.content %}
                     <p class="text-sm line-clamp-2" style="color: var(--text-secondary)">{{ log.content }}</p>
                 {% else %}
-                    <p class="text-sm italic" style="color: var(--text-muted)">无内容</p>
+                    <p class="text-sm italic" style="color: var(--text-muted)">{{ t('dlog.no_content') }}</p>
                 {% endif %}
             </a>
         {% endfor %}
     </div>
 {% else %}
     <div class="text-center py-12" style="color: var(--text-muted);">
-        <div class="text-3xl mb-2">📭</div>
-        <p>还没有日志</p>
-        <p class="text-sm mt-1">点击「写今天日志」开始记录</p>
+        <p>{{ t('dlog.empty') }}</p>
+        <p class="text-sm mt-1">{{ t('dlog.empty_hint') }}</p>
     </div>
 {% endif %}
 {% endblock %}

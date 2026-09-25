@@ -1,10 +1,10 @@
 {% extends "layout.html" %}
-{% block title %}每日日志 - {{ log_date }}{% endblock %}
+{% block title %}{{ t('dlog.title') }} - {{ log_date }}{% endblock %}
 {% block content %}
 <div class="max-w-2xl mx-auto">
     <div class="flex items-center gap-2 mb-6">
-        <a href="/daily-log" style="color: var(--text-muted)" class="hover:opacity-70">&larr; 日志列表</a>
-        <h1 class="text-xl font-bold" style="color: var(--text-primary)">{{ log_date.strftime('%Y-%m-%d') }} 日志</h1>
+        <a href="/daily-log" style="color: var(--text-muted)" class="hover:opacity-70">&larr; {{ t('dlog.back') }}</a>
+        <h1 class="text-xl font-bold" style="color: var(--text-primary)">{{ t('dlog.entry_title', d=log_date.strftime('%Y-%m-%d')) }}</h1>
     </div>
 
     <div class="glass-card p-6">
@@ -13,19 +13,17 @@
               class="space-y-4">
 
             <div>
-                <label class="block text-sm font-medium mb-1" style="color: var(--text-primary)">今天的心情</label>
-                <div class="flex gap-3" x-data="{ mood: '{{ log.mood if log and log.mood else "neutral" }}' }">
-                    {% for val, emoji in [("great", "😄"), ("good", "🙂"), ("neutral", "😐"), ("bad", "😔"), ("awful", "😢")] %}
-                        <label class="flex flex-col items-center cursor-pointer p-2 rounded-lg transition-colors"
-                               :class="mood === '{{ val }}' ? 'accent-subtle' : 'hover:opacity-80'"
-                               style="border-radius: 12px;">
+                <label class="block text-sm font-medium mb-1" style="color: var(--text-primary)">{{ t('dlog.mood_label') }}</label>
+                <div class="flex gap-2 flex-wrap" x-data="{ mood: '{{ log.mood if log and log.mood else 'neutral' }}' }">
+                    {% for val, color in [("great", "#4f7148"), ("good", "#7a9168"), ("neutral", "#73746e"), ("bad", "#a46438"), ("awful", "#a05a66")] %}
+                        <label class="flex items-center gap-1.5 cursor-pointer px-3 py-2 transition-colors"
+                               :class="mood === '{{ val }}' ? 'accent-subtle accent-text' : 'hover:opacity-80'"
+                               style="border: 1px solid var(--line); border-radius: 2px; font-size: 12px; color: var(--text-secondary);">
                             <input type="radio" name="mood" value="{{ val }}"
                                    x-model="mood" class="sr-only"
                                    {% if log and log.mood == val %}checked{% endif %}>
-                            <span class="text-2xl">{{ emoji }}</span>
-                            <span class="text-xs mt-1" style="color: var(--text-muted)">
-                                {% if val == "great" %}很棒{% elif val == "good" %}不错{% elif val == "neutral" %}一般{% elif val == "bad" %}不好{% else %}糟透{% endif %}
-                            </span>
+                            <span class="mood-dot" style="background: {{ color }};"></span>
+                            <span>{{ t('mood.' ~ val) }}</span>
                         </label>
                     {% endfor %}
                 </div>
@@ -42,28 +40,28 @@
                 }
             } }">
                 <div class="flex items-center justify-between mb-1">
-                    <label class="block text-sm font-medium" style="color: var(--text-primary)">今天想说什么？</label>
+                    <label class="block text-sm font-medium" style="color: var(--text-primary)">{{ t('dlog.say_label') }}</label>
                     <button type="button" @click="gen()" :disabled="generating"
                             class="text-xs px-3 py-1.5 rounded-lg transition-colors"
                             :class="generating ? 'opacity-50 cursor-wait' : 'accent-subtle accent-text'">
-                        <span x-show="!generating">🤖 AI 总结今日动态</span>
-                        <span x-show="generating">⏳ 生成中...</span>
+                        <span x-show="!generating">{{ t('dlog.ai_btn') }}</span>
+                        <span x-show="generating">{{ t('dlog.generating') }}</span>
                     </button>
                 </div>
                 <textarea x-ref="content" name="content" rows="6"
                           class="w-full px-3 py-2 border rounded-lg text-sm outline-none resize-none"
                           style="border-color: #e2e8f0; background: rgba(255,255,255,0.5);"
-                          placeholder="记录今天发生的事情、感受、想法...">{{ log.content if log and log.content else '' }}</textarea>
+                          placeholder="{{ t('dlog.say_ph') }}">{{ log.content if log and log.content else '' }}</textarea>
             </div>
 
             <div class="flex gap-3 pt-2">
                 <button type="submit" class="btn-primary">
-                    保存日志
+                    {{ t('dlog.save') }}
                 </button>
                 <a href="/daily-log"
                    class="px-4 py-2 rounded-lg text-sm transition-colors"
                    style="background: rgba(0,0,0,0.04); color: var(--text-secondary);">
-                    取消
+                    {{ t('cancel') }}
                 </a>
             </div>
         </form>
