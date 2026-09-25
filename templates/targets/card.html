@@ -1,7 +1,7 @@
 <div class="glass-card p-4 mb-3" id="target-{{ target.id }}" data-target-id="{{ target.id }}">
     <div class="flex items-start">
         <span class="drag-handle flex-shrink-0 mr-2 text-base leading-none select-none pt-0.5" style="cursor: grab; color: var(--text-muted);" title="{{ t('targets.drag') }}">&#8942;&#8942;</span>
-        <span class="target-badge hb-g{{ target.badge_style or (target.id % 8 + 1) }} flex-shrink-0 mr-3"></span>
+        <a href="/targets/{{ target.id }}" class="target-badge hb-g{{ target.badge_style or (target.id % 8 + 1) }} hover:scale-110 transition-transform inline-block mr-3"></a>
         <div class="flex-1 min-w-0">
             <div class="flex items-start justify-between">
                 <div class="min-w-0">
