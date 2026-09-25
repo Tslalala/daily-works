@@ -12,7 +12,7 @@ from app.database import get_db, init_db
 from app.i18n import tt
 from app.models.activity_log import ActivityLog
 from app.models.user import User
-from app.routers import pages, auth, api_targets, api_habits, api_daily_log, api_ai, api_settings, api_work
+from app.routers import pages, auth, admin, api_targets, api_habits, api_daily_log, api_ai, api_settings, api_work
 from app.services.activity_service import get_logs_by_date_range, get_today_logs
 from app.templates import templates
 
@@ -35,6 +35,7 @@ app.mount("/wallpapers", CachedWallpaperFiles(directory=str(BASE_DIR / "wallpape
 
 # Register routers
 app.include_router(auth.router)
+app.include_router(admin.router)
 app.include_router(pages.router)
 app.include_router(api_targets.router)
 app.include_router(api_habits.router)

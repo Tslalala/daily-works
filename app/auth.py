@@ -100,6 +100,13 @@ def get_current_user(request: Request, db: Session = Depends(get_db)) -> User:
     raise LoginRequired(next_url)
 
 
+def require_admin(user: User = Depends(get_current_user)) -> User:
+    """Route guard for the admin backend; non-admin users get a 403."""
+    if not user.is_admin:
+        raise HTTPException(status_code=403, detail="Admin only")
+    return user
+
+
 def install_auth_handlers(app: FastAPI) -> None:
     @app.exception_handler(LoginRequired)
     async def _handle_login_required(request: Request, exc: LoginRequired) -> Response:

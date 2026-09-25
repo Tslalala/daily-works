@@ -17,7 +17,7 @@ def seed():
     # account created on demand.
     user = db.query(User).first()
     if user is None:
-        user = User(username="demo", password_hash=hash_password("demo123456"))
+        user = User(username="demo", password_hash=hash_password("demo123456"), is_admin=True)
         db.add(user)
         db.commit()
         db.refresh(user)

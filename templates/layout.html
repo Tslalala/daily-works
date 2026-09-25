@@ -118,6 +118,13 @@
                                   {% if request.url.path.startswith('/daily-log') %}nav-link-active{% endif %}">
                             {{ t('nav.dlog') }}
                         </a>
+                        {% if user and user.is_admin %}
+                        <a href="/admin"
+                           class="nav-link px-3 py-2 text-sm font-medium transition-colors
+                                  {% if request.url.path.startswith('/admin') %}nav-link-active{% endif %}">
+                            {{ t('nav.admin') }}
+                        </a>
+                        {% endif %}
                     </div>
                 </div>
                 <div class="flex items-center gap-3">

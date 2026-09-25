@@ -1,0 +1,60 @@
+{% extends "layout.html" %}
+{% block title %}{{ t('admin.title') }} - Daily Planner{% endblock %}
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <div class="flex items-center justify-between mb-6">
+        <h1 class="text-xl font-bold" style="color: var(--text-primary)">{{ t('admin.title') }}</h1>
+        <a href="/admin/activity" class="text-sm font-medium" style="color: var(--primary)">{{ t('admin.activity') }}</a>
+    </div>
+    {% if error %}<p class="auth-error mb-4">{{ error }}</p>{% endif %}
+    <div class="glass-card overflow-x-auto">
+        <table class="w-full text-sm">
+            <thead>
+                <tr style="color: var(--text-muted); border-bottom: 1px solid var(--line);">
+                    <th class="text-left px-4 py-3 font-semibold">{{ t('admin.username') }}</th>
+                    <th class="text-left px-4 py-3 font-semibold">{{ t('admin.created') }}</th>
+                    <th class="text-left px-4 py-3 font-semibold">{{ t('admin.targets') }}</th>
+                    <th class="text-left px-4 py-3 font-semibold">{{ t('admin.habits') }}</th>
+                    <th class="text-left px-4 py-3 font-semibold">{{ t('admin.logs') }}</th>
+                    <th class="text-left px-4 py-3 font-semibold">{{ t('admin.role') }}</th>
+                    <th class="text-right px-4 py-3 font-semibold">{{ t('admin.actions') }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in users %}
+                <tr style="border-bottom: 1px solid var(--line);">
+                    <td class="px-4 py-3" style="color: var(--text-primary); font-weight: 600;">{{ row.user.username }}</td>
+                    <td class="px-4 py-3" style="color: var(--text-muted);">{{ row.user.created_at.strftime('%Y-%m-%d') if row.user.created_at else '' }}</td>
+                    <td class="px-4 py-3">{{ row.counts.targets }}</td>
+                    <td class="px-4 py-3">{{ row.counts.habits }}</td>
+                    <td class="px-4 py-3">{{ row.counts.logs }}</td>
+                    <td class="px-4 py-3">
+                        {% if row.user.is_admin %}
+                            <span style="color: var(--primary); font-weight: 600;">{{ t('admin.admin_role') }}</span>
+                        {% else %}
+                            <span style="color: var(--text-muted);">{{ t('admin.user_role') }}</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-4 py-3 text-right whitespace-nowrap">
+                        <a href="/admin/users/{{ row.user.id }}" class="text-sm mr-3" style="color: var(--primary)">{{ t('admin.view_data') }}</a>
+                        <form method="post" action="/admin/users/{{ row.user.id }}/admin" class="inline-flex">
+                            <button type="submit" class="btn-ghost text-xs px-2 py-1 mr-2">
+                                {% if row.user.is_admin %}{{ t('admin.demote') }}{% else %}{{ t('admin.make_admin') }}{% endif %}
+                            </button>
+                        </form>
+                        {% if row.user.id != user.id %}
+                        <form method="post" action="/admin/users/{{ row.user.id }}/delete" class="inline-flex"
+                              onsubmit="return confirm('{{ t('admin.confirm_delete') }}')">
+                            <button type="submit" class="btn-ghost text-xs px-2 py-1" style="color: #dc2626;">{{ t('admin.delete_user') }}</button>
+                        </form>
+                        {% else %}
+                        <span class="text-xs" style="color: var(--text-muted);">{{ t('admin.self') }}</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
