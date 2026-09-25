@@ -62,7 +62,7 @@
             <linearGradient id="hbgrad-8" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e9d5ff"/><stop offset="1" stop-color="#c7d2fe"/></linearGradient>
             {# Globe wireframe (lat/long lines) used as the unfinished overlay; #}
             {# the use-site rotates it 135deg so its axis lies on the 45deg terminator. #}
-            <g id="globe-lines" fill="none" stroke="rgba(120,113,108,0.5)" stroke-width="0.7">
+            <g id="globe-lines" fill="none" stroke="rgba(120,113,108,0.5)" stroke-width="0.5">
                 <line x1="20" y1="0" x2="20" y2="40"/>
                 <ellipse cx="20" cy="20" rx="6.67" ry="20"/>
                 <ellipse cx="20" cy="20" rx="13.33" ry="20"/>
@@ -73,19 +73,22 @@
                 <line x1="1.46" y1="27.5" x2="38.54" y2="27.5"/>
                 <line x1="6.77" y1="35" x2="33.23" y2="35"/>
             </g>
-            {# Liquid-glass overlay alternative for the unfinished part #}
-            <linearGradient id="glassfill" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0" stop-color="rgba(255,255,255,0.5)"/>
-                <stop offset="0.55" stop-color="rgba(255,255,255,0.2)"/>
-                <stop offset="1" stop-color="rgba(255,255,255,0.4)"/>
+            {# Frosted-glass overlay alternative for the unfinished part: #}
+            {# a light frost wash + a rim light arc along the top-left edge. #}
+            <linearGradient id="frostfill" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stop-color="rgba(255,255,255,0.42)"/>
+                <stop offset="0.5" stop-color="rgba(255,255,255,0.14)"/>
+                <stop offset="1" stop-color="rgba(255,255,255,0.3)"/>
             </linearGradient>
-            <filter id="glassblur" x="-30%" y="-30%" width="160%" height="160%">
-                <feGaussianBlur stdDeviation="1.6"/>
+            <filter id="frostblur" x="-30%" y="-30%" width="160%" height="160%">
+                <feGaussianBlur stdDeviation="1.1"/>
             </filter>
             <g id="glass-shine">
-                <circle cx="20" cy="20" r="20" fill="url(#glassfill)"/>
-                <ellipse cx="13" cy="11" rx="11" ry="6" fill="rgba(255,255,255,0.55)" filter="url(#glassblur)" transform="rotate(-28 13 11)"/>
-                <ellipse cx="28" cy="31" rx="7" ry="3.5" fill="rgba(255,255,255,0.3)" filter="url(#glassblur)" transform="rotate(-28 28 31)"/>
+                <circle cx="20" cy="20" r="20" fill="url(#frostfill)"/>
+                <circle cx="20" cy="20" r="18.1" fill="none" stroke="rgba(255,255,255,0.9)" stroke-width="1.5"
+                        stroke-linecap="round" stroke-dasharray="32 1000" transform="rotate(-155 20 20)" filter="url(#frostblur)"/>
+                <circle cx="20" cy="20" r="18.1" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="1"
+                        stroke-linecap="round" stroke-dasharray="14 1000" transform="rotate(25 20 20)" filter="url(#frostblur)"/>
             </g>
         </defs>
     </svg>
