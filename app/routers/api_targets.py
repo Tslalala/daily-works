@@ -36,6 +36,7 @@ async def api_create_target(request: Request, db: Session = Depends(get_db), use
         target_type=form.get("target_type", "short_term"),
         deadline=form.get("deadline") or None,
         priority=int(form.get("priority", 2)),
+        badge_style=form.get("badge_style") or None,
     )
     t = create_target(db, user.id, data)
     type_label = TYPE_LABEL.get(t.target_type, "短期")
@@ -52,6 +53,7 @@ async def api_update_target(request: Request, target_id: int, db: Session = Depe
         target_type=form.get("target_type") or None,
         deadline=form.get("deadline") or None,
         priority=int(form["priority"]) if form.get("priority") else None,
+        badge_style=form.get("badge_style") or None,
     )
     t = update_target(db, user.id, target_id, data)
     if not t:

@@ -6,8 +6,9 @@
 
                 <!-- Target type badge / editor -->
                 <span x-show="!editType" @click="editType = true"
-                      class="text-xs px-1.5 py-0.5 rounded cursor-pointer hover:ring-2 hover:ring-primary transition-all"
+                      class="text-xs px-1.5 py-0.5 rounded inline-flex items-center gap-1.5 cursor-pointer hover:ring-2 hover:ring-primary transition-all"
                       style="background: rgba(0,0,0,0.04); color: var(--text-muted);">
+                    <span class="hb-g{{ target.badge_style or (target.id % 8 + 1) }} inline-block w-3.5 h-3.5 rounded-full flex-shrink-0"></span>
                     {{ target.target_type|type_label }}
                 </span>
                 <form x-show="editType" x-cloak

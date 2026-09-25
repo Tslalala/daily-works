@@ -17,6 +17,7 @@ class Target(Base):
     target_type = Column(String(20), nullable=False, default="short_term")  # deadline / long_term / short_term
     deadline = Column(DateTime, nullable=True)
     priority = Column(Integer, default=2)  # 1=高 2=中 3=低
+    badge_style = Column(String(10), nullable=True)  # "1"-"8": gradient preset shown before the type label
     status = Column(String(20), default="active")  # active / completed / archived
     progress = Column(Integer, default=0)  # 0-100
     sort_order = Column(Integer, default=0)

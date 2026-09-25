@@ -1,3 +1,4 @@
+import random
 from datetime import date, datetime
 from typing import List, Optional
 
@@ -23,7 +24,10 @@ def get_target(db: Session, user_id: int, target_id: int) -> Optional[Target]:
 
 
 def create_target(db: Session, user_id: int, data: TargetCreate) -> Target:
-    t = Target(user_id=user_id, **data.model_dump())
+    d = data.model_dump()
+    if not d.get("badge_style"):
+        d["badge_style"] = str(random.randint(1, 8))
+    t = Target(user_id=user_id, **d)
     db.add(t)
     db.commit()
     db.refresh(t)

@@ -2,7 +2,7 @@
     <div class="flex items-center justify-between">
         <div class="flex items-center gap-3">
             <a href="/habits/{{ habit.id }}" class="habit-badge hb-g{{ habit.badge_style or (habit.id % 8 + 1) }} hover:scale-110 transition-transform inline-block">
-                {{ habit.icon if habit.icon else habit.name[:1] }}
+                {{ habit.icon }}
             </a>
             <div>
                 <a href="/habits/{{ habit.id }}" class="text-sm font-medium hover:accent-text" style="color: var(--text-primary)">{{ habit.name }}</a>
