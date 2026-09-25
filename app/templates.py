@@ -6,6 +6,7 @@ from fastapi.templating import Jinja2Templates
 from app.auth import get_user_from_request
 from app.database import SessionLocal
 from app.i18n import get_lang, jinja_t
+from app.utils.quotes import random_quote
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -23,6 +24,7 @@ def _default_context(req) -> dict:
         "lang": get_lang(req),
         "now": datetime.now(),
         "css_version": CSS_VERSION,
+        "quote": random_quote(),
     }
     db = SessionLocal()
     try:
