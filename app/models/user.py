@@ -11,4 +11,5 @@ class User(Base):
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String(30), nullable=False, unique=True, index=True)
     password_hash = Column(String(255), nullable=False)
+    overlay_style = Column(String(10), default="grid")  # grid / glass
     created_at = Column(DateTime, default=datetime.now)

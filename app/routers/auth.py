@@ -116,12 +116,26 @@ def logout(request: Request, db: Session = Depends(get_db)):
 
 
 @router.get("/account")
-def account_page(request: Request, user: User = Depends(get_current_user), changed: str = ""):
+def account_page(request: Request, user: User = Depends(get_current_user), changed: str = "", appearance: str = ""):
     return templates.TemplateResponse(request, "account.html", {
         "user": user,
         "changed": changed,
+        "appearance": appearance,
         "error": "",
     })
+
+
+@router.post("/account/appearance")
+def change_appearance(
+    request: Request,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+    overlay_style: str = Form("grid"),
+):
+    user.overlay_style = overlay_style if overlay_style in ("grid", "glass") else "grid"
+    db.commit()
+    log_action(db, user.id, "appearance_changed", tt(request, "auth.act_appearance_changed"))
+    return RedirectResponse("/account?appearance=1", status_code=303)
 
 
 @router.post("/account/password")

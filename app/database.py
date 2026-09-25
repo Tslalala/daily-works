@@ -54,6 +54,14 @@ def init_db():
                 conn.execute(text('UPDATE targets SET badge_style = CAST((id % 8) + 1 AS TEXT)'))
                 conn.commit()
 
+    # Migration: add users.overlay_style if missing
+    if 'users' in tables:
+        cols = [c['name'] for c in inspector.get_columns('users')]
+        if 'overlay_style' not in cols:
+            with engine.connect() as conn:
+                conn.execute(text("ALTER TABLE users ADD COLUMN overlay_style VARCHAR(10) DEFAULT 'grid'"))
+                conn.commit()
+
     # Migration (auth): daily_logs.log_date unique -> (user_id, log_date) composite
     if 'daily_logs' in tables:
         cols = [c['name'] for c in inspector.get_columns('daily_logs')]

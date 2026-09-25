@@ -8,8 +8,11 @@
                     {% if shadow %}
                         <clipPath id="msh-d-{{ target.id }}"><path d="{{ shadow }}" transform="rotate(135 20 20)"/></clipPath>
                         <g clip-path="url(#msh-d-{{ target.id }})">
-                            <circle cx="20" cy="20" r="20" fill="rgba(248,246,241,0.4)"/>
-                            <use href="#globe-lines"/>
+                            {% if user.overlay_style == 'glass' %}
+                                <use href="#glass-shine"/>
+                            {% else %}
+                                <use href="#globe-lines" transform="rotate(135 20 20)"/>
+                            {% endif %}
                         </g>
                     {% endif %}
                 </svg>

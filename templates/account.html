@@ -25,5 +25,28 @@
             <button type="submit" class="btn-primary auth-submit">{{ t('auth.change_password') }}</button>
         </form>
     </div>
+
+    <div class="glass-card p-6 mt-6">
+        <h2 class="text-sm font-semibold mb-3" style="color: var(--text-primary)">{{ t('auth.appearance_title') }}</h2>
+        {% if appearance %}
+            <p class="text-sm mb-4" style="color: #059669;" data-auto-dismiss>{{ t('auth.appearance_saved') }}</p>
+        {% endif %}
+        <form method="post" action="/account/appearance">
+            <label class="auth-label">{{ t('auth.overlay_style') }}</label>
+            <div class="flex gap-5 mt-2">
+                <label class="flex items-center gap-2 text-sm cursor-pointer" style="color: var(--text-primary)">
+                    <input type="radio" name="overlay_style" value="grid"
+                           {% if (user.overlay_style or 'grid') == 'grid' %}checked{% endif %}>
+                    {{ t('auth.overlay_grid') }}
+                </label>
+                <label class="flex items-center gap-2 text-sm cursor-pointer" style="color: var(--text-primary)">
+                    <input type="radio" name="overlay_style" value="glass"
+                           {% if user.overlay_style == 'glass' %}checked{% endif %}>
+                    {{ t('auth.overlay_glass') }}
+                </label>
+            </div>
+            <button type="submit" class="btn-primary auth-submit">{{ t('auth.save') }}</button>
+        </form>
+    </div>
 </div>
 {% endblock %}
