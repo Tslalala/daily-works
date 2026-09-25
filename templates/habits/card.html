@@ -1,7 +1,7 @@
 <div class="glass-card p-4" id="habit-{{ habit.id }}">
     <div class="flex items-center justify-between">
         <div class="flex items-center gap-3">
-            <a href="/habits/{{ habit.id }}" class="habit-badge hover:scale-110 transition-transform inline-block">
+            <a href="/habits/{{ habit.id }}" class="habit-badge hb-g{{ habit.badge_style or (habit.id % 8 + 1) }} hover:scale-110 transition-transform inline-block">
                 {{ habit.icon if habit.icon else habit.name[:1] }}
             </a>
             <div>

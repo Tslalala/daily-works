@@ -36,6 +36,21 @@
             </div>
 
             <div>
+                <label class="block text-sm font-medium mb-1" style="color: var(--text-primary)">{{ t('habits.badge_style') }}</label>
+                <div class="flex gap-2 mt-1">
+                    {% for i in range(1, 9) %}
+                        <label>
+                            <input type="radio" name="badge_style" value="{{ i }}"
+                                   class="peer sr-only"
+                                   {% if habit and habit.badge_style == i|string %}checked{% endif %}>
+                            <span class="hb-g{{ i }} block w-8 h-8 rounded-full border-2 border-transparent peer-checked:border-[color:var(--primary)] transition-all cursor-pointer"></span>
+                        </label>
+                    {% endfor %}
+                </div>
+                <p class="text-xs mt-1.5" style="color: var(--text-muted)">{{ t('habits.badge_style_hint') }}</p>
+            </div>
+
+            <div>
                 <label class="block text-sm font-medium mb-1" style="color: var(--text-primary)">{{ t('habits.freq') }}</label>
                 <select name="frequency"
                         class="w-full px-3 py-2 border rounded-lg text-sm outline-none"

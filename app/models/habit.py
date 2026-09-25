@@ -15,6 +15,7 @@ class Habit(Base):
     description = Column(Text, nullable=True)
     frequency = Column(String(20), default="daily")  # daily / weekly
     icon = Column(String(50), default="")
+    badge_style = Column(String(10), nullable=True)  # "1"-"8": gradient preset for the badge
     status = Column(String(20), default="active")  # active / archived
     created_at = Column(DateTime, default=datetime.now)
     updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)

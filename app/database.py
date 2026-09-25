@@ -36,6 +36,15 @@ def init_db():
                     conn.execute(text(f'CREATE INDEX ix_{table}_user_id ON {table} (user_id)'))
                     conn.commit()
 
+    # Migration: add habits.badge_style if missing (backfill deterministically by id)
+    if 'habits' in tables:
+        cols = [c['name'] for c in inspector.get_columns('habits')]
+        if 'badge_style' not in cols:
+            with engine.connect() as conn:
+                conn.execute(text('ALTER TABLE habits ADD COLUMN badge_style VARCHAR(10)'))
+                conn.execute(text('UPDATE habits SET badge_style = CAST((id % 8) + 1 AS TEXT)'))
+                conn.commit()
+
     # Migration (auth): daily_logs.log_date unique -> (user_id, log_date) composite
     if 'daily_logs' in tables:
         cols = [c['name'] for c in inspector.get_columns('daily_logs')]

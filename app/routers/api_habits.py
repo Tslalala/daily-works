@@ -64,6 +64,7 @@ async def api_create_habit(request: Request, db: Session = Depends(get_db), user
         icon=form.get("icon") or "",
         description=form.get("description") or None,
         frequency=form.get("frequency", "daily"),
+        badge_style=form.get("badge_style") or None,
     )
     log_action(db, user.id, "create_habit", f"创建了习惯「{h.name}」", target_type="habit", target_id=h.id)
     return RedirectResponse(url="/habits?created=1", status_code=303)
@@ -78,6 +79,7 @@ async def api_update_habit(request: Request, habit_id: int, db: Session = Depend
         icon=form.get("icon"),
         description=form.get("description") or None,
         frequency=form.get("frequency"),
+        badge_style=form.get("badge_style") or None,
     )
     if not h:
         return HTMLResponse("Habit not found", status_code=404)

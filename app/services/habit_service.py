@@ -1,3 +1,4 @@
+import random
 from datetime import date, datetime
 from typing import List, Optional
 
@@ -17,8 +18,9 @@ def get_habit(db: Session, user_id: int, habit_id: int) -> Optional[Habit]:
     return db.query(Habit).filter(Habit.id == habit_id, Habit.user_id == user_id).first()
 
 
-def create_habit(db: Session, user_id: int, name: str, icon: str = "", description: str = "", frequency: str = "daily") -> Habit:
-    h = Habit(user_id=user_id, name=name, icon=icon, description=description or None, frequency=frequency)
+def create_habit(db: Session, user_id: int, name: str, icon: str = "", description: str = "", frequency: str = "daily", badge_style: Optional[str] = None) -> Habit:
+    h = Habit(user_id=user_id, name=name, icon=icon, description=description or None, frequency=frequency,
+              badge_style=badge_style or str(random.randint(1, 8)))
     db.add(h)
     db.commit()
     db.refresh(h)
