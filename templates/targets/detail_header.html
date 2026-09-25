@@ -1,14 +1,15 @@
 <div id="detail-header" x-data="{ editType: false, editPrio: false, editDesc: false }">
     <div class="flex items-start justify-between mb-4">
-        <div>
+        <div class="flex items-start gap-3 min-w-0 flex-1">
+            <span class="target-badge lg hb-g{{ target.badge_style or (target.id % 8 + 1) }} flex-shrink-0"></span>
+            <div class="min-w-0">
             <div class="flex items-center gap-2 mb-1 flex-wrap">
                 <h1 class="text-xl font-bold" style="color: var(--text-primary)">{{ target.title }}</h1>
 
                 <!-- Target type badge / editor -->
                 <span x-show="!editType" @click="editType = true"
-                      class="text-xs px-1.5 py-0.5 rounded inline-flex items-center gap-1.5 cursor-pointer hover:ring-2 hover:ring-primary transition-all"
+                      class="text-xs px-1.5 py-0.5 rounded cursor-pointer hover:ring-2 hover:ring-primary transition-all"
                       style="background: rgba(0,0,0,0.04); color: var(--text-muted);">
-                    <span class="hb-g{{ target.badge_style or (target.id % 8 + 1) }} inline-block w-3.5 h-3.5 rounded-full flex-shrink-0"></span>
                     {{ target.target_type|type_label }}
                 </span>
                 <form x-show="editType" x-cloak
@@ -56,6 +57,7 @@
                     {{ target.deadline|format_dt("%Y-%m-%d") }} · {{ target.deadline|days_remaining }}
                 </p>
             {% endif %}
+            </div>
         </div>
         <div class="flex gap-2 flex-shrink-0">
             {% if target.status != "completed" %}

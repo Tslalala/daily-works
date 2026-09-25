@@ -1,6 +1,7 @@
 <div class="glass-card p-4 mb-3" id="target-{{ target.id }}" data-target-id="{{ target.id }}">
     <div class="flex items-start">
         <span class="drag-handle flex-shrink-0 mr-2 text-base leading-none select-none pt-0.5" style="cursor: grab; color: var(--text-muted);" title="{{ t('targets.drag') }}">&#8942;&#8942;</span>
+        <span class="target-badge hb-g{{ target.badge_style or (target.id % 8 + 1) }} flex-shrink-0 mr-3"></span>
         <div class="flex-1 min-w-0">
             <div class="flex items-start justify-between">
                 <div class="min-w-0">
@@ -13,10 +14,7 @@
                         <a href="/targets/{{ target.id }}" class="text-sm font-medium hover:accent-text {% if target.status == 'completed' %}line-through{% endif %}" style="color: {% if target.status == 'completed' %}var(--text-muted){% else %}var(--text-primary){% endif %}">
                             {{ target.title }}
                         </a>
-                        <span class="text-xs px-1.5 py-0.5 rounded inline-flex items-center gap-1.5" style="background: rgba(0,0,0,0.04); color: var(--text-muted);">
-                            <span class="hb-g{{ target.badge_style or (target.id % 8 + 1) }} inline-block w-3.5 h-3.5 rounded-full flex-shrink-0"></span>
-                            {{ target.target_type|type_label }}
-                        </span>
+                        <span class="text-xs px-1.5 py-0.5 rounded" style="background: rgba(0,0,0,0.04); color: var(--text-muted);">{{ target.target_type|type_label }}</span>
                         <span class="text-xs px-1.5 py-0.5 rounded"
                             style="{% if target.priority == 1 %}background: #fef2f2; color: #dc2626;{% elif target.priority == 2 %}background: rgba(0,0,0,0.04); color: #ea580c;{% else %}background: rgba(0,0,0,0.04); color: var(--text-muted);{% endif %}">
                             {{ target.priority|priority_label_full }}
