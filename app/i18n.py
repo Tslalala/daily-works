@@ -64,6 +64,7 @@ MESSAGES = {
         "auth.overlay_style": "目标圆未完成部分覆盖",
         "auth.overlay_grid": "浅灰细格",
         "auth.overlay_glass": "磨砂玻璃",
+        "auth.overlay_none": "无（纯渐变）",
         "auth.appearance_saved": "外观设置已保存",
         "auth.save": "保存",
         # --- date utils ---
@@ -324,6 +325,7 @@ MESSAGES = {
         "auth.overlay_style": "Target circle unfinished overlay",
         "auth.overlay_grid": "Fine gray grid",
         "auth.overlay_glass": "Frosted glass",
+        "auth.overlay_none": "None (pure gradient)",
         "auth.appearance_saved": "Appearance saved",
         "auth.save": "Save",
         # --- date utils ---

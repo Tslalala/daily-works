@@ -132,7 +132,7 @@ def change_appearance(
     user: User = Depends(get_current_user),
     overlay_style: str = Form("grid"),
 ):
-    user.overlay_style = overlay_style if overlay_style in ("grid", "glass") else "grid"
+    user.overlay_style = overlay_style if overlay_style in ("grid", "glass", "none") else "grid"
     db.commit()
     log_action(db, user.id, "appearance_changed", tt(request, "auth.act_appearance_changed"))
     return RedirectResponse("/account?appearance=1", status_code=303)

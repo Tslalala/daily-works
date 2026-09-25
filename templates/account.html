@@ -44,6 +44,11 @@
                            {% if user.overlay_style == 'glass' %}checked{% endif %}>
                     {{ t('auth.overlay_glass') }}
                 </label>
+                <label class="flex items-center gap-2 text-sm cursor-pointer" style="color: var(--text-primary)">
+                    <input type="radio" name="overlay_style" value="none"
+                           {% if user.overlay_style == 'none' %}checked{% endif %}>
+                    {{ t('auth.overlay_none') }}
+                </label>
             </div>
             <button type="submit" class="btn-primary auth-submit">{{ t('auth.save') }}</button>
         </form>
