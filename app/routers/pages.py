@@ -17,6 +17,7 @@ from app.services import work_service
 from app.templates import templates
 from app.i18n import translate
 from app.utils.date_utils import build_calendar, days_remaining, deadline_class, format_duration, format_dt, priority_color, priority_label, type_label, weekday_long
+from app.utils.moon import moon_shadow_path
 
 router = APIRouter()
 
@@ -68,6 +69,7 @@ def register_template_filters(templates_obj):
     templates_obj.env.filters["weekday_long"] = f_weekday_long
     templates_obj.env.filters["work_duration"] = f_work_duration
     templates_obj.env.filters["suggested_out"] = f_suggested_out
+    templates_obj.env.filters["moon_shadow"] = moon_shadow_path
 
 
 @router.get("/targets", response_class=HTMLResponse)

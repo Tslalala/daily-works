@@ -49,6 +49,28 @@
     <link rel="stylesheet" href="/static/editorial.css?v={{ css_version }}">
 </head>
 <body>
+    {# Shared SVG defs: badge gradients (hbgrad-1..8) and the moon "shadow" grid. #}
+    <svg width="0" height="0" style="position: absolute" aria-hidden="true">
+        <defs>
+            <linearGradient id="hbgrad-1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fde68a"/><stop offset="1" stop-color="#fdba74"/></linearGradient>
+            <linearGradient id="hbgrad-2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fecaca"/><stop offset="1" stop-color="#fda4af"/></linearGradient>
+            <linearGradient id="hbgrad-3" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fbcfe8"/><stop offset="1" stop-color="#d8b4fe"/></linearGradient>
+            <linearGradient id="hbgrad-4" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ddd6fe"/><stop offset="1" stop-color="#bfdbfe"/></linearGradient>
+            <linearGradient id="hbgrad-5" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#bae6fd"/><stop offset="1" stop-color="#99f6e4"/></linearGradient>
+            <linearGradient id="hbgrad-6" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#99f6e4"/><stop offset="1" stop-color="#bbf7d0"/></linearGradient>
+            <linearGradient id="hbgrad-7" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#bbf7d0"/><stop offset="1" stop-color="#d9f99d"/></linearGradient>
+            <linearGradient id="hbgrad-8" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e9d5ff"/><stop offset="1" stop-color="#c7d2fe"/></linearGradient>
+            {# Globe wireframe (lat/long lines) used as the unfinished overlay #}
+            <g id="globe-lines" fill="none" stroke="rgba(120,113,108,0.5)" stroke-width="0.7">
+                <line x1="20" y1="0" x2="20" y2="40"/>
+                <ellipse cx="20" cy="20" rx="10" ry="20"/>
+                <ellipse cx="20" cy="20" rx="17.32" ry="20"/>
+                <line x1="0" y1="20" x2="40" y2="20"/>
+                <line x1="2.68" y1="10" x2="37.32" y2="10"/>
+                <line x1="2.68" y1="30" x2="37.32" y2="30"/>
+            </g>
+        </defs>
+    </svg>
     <nav class="site-nav">
         <div class="max-w-6xl mx-auto px-4">
             <div class="flex items-center justify-between h-14">
