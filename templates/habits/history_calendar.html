@@ -47,7 +47,7 @@
                         class="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-medium relative group transition-colors"
                         style="{% if focus_date and day.date_iso == focus_date %}outline: 2px solid var(--primary); outline-offset: 1px;{% endif %}
                                {% if day.is_today and day.date_iso != focus_date %}outline: 1px solid var(--primary-light); outline-offset: 1px;{% endif %}
-                               {% if day.checked %}background: var(--primary); color: white;{% else %}background: rgba(0,0,0,0.04); color: var(--text-secondary);{% endif %}">
+                               {% if day.checked %}background: var(--primary); color: white;{% else %}background: var(--chip-muted-bg); color: var(--text-secondary);{% endif %}">
                     {{ day.day_num }}
                     {% if day.note %}
                     <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 hidden group-hover:block z-10 pointer-events-none">
@@ -62,7 +62,7 @@
     </div>
     <div class="flex items-center gap-2 mt-3 text-xs" style="color: var(--text-muted);">
         <span>{{ t('habits.fewer') }}</span>
-        <div class="w-3 h-3 rounded-sm" style="background: rgba(0,0,0,0.04);"></div>
+        <div class="w-3 h-3 rounded-sm" style="background: var(--chip-muted-bg);"></div>
         <div class="w-3 h-3 rounded-sm" style="background: var(--primary);"></div>
         <span>{{ t('habits.more') }}</span>
         <span class="ml-auto">{{ t('habits.count', c=checked_count, t=calendar_days|length) }}</span>

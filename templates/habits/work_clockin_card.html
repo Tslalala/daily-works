@@ -5,7 +5,7 @@
             <!-- Edit times -->
             <div class="relative" x-data="{ open: false }">
                 <button @click="open = !open" class="text-xs px-2 py-1 rounded transition-colors"
-                        style="background: rgba(0,0,0,0.04); color: var(--text-secondary);">{{ t('work.edit') }}</button>
+                        style="background: var(--chip-muted-bg); color: var(--text-secondary);">{{ t('work.edit') }}</button>
                 <div x-show="open" x-cloak @click.away="open = false"
                      class="absolute right-0 mt-1 glass-card-static p-3 z-20 w-60">
                     <form hx-post="/api/work/edit" hx-target="#work-clockin-card" hx-swap="outerHTML" class="space-y-2">
@@ -39,7 +39,7 @@
             <!-- History -->
             <div class="relative" x-data="{ open: false }">
                 <button @click="open = !open" class="text-xs px-2 py-1 rounded transition-colors"
-                        style="background: rgba(0,0,0,0.04); color: var(--text-secondary);">{{ t('work.history') }}</button>
+                        style="background: var(--chip-muted-bg); color: var(--text-secondary);">{{ t('work.history') }}</button>
                 <div x-show="open" x-cloak @click.away="open = false"
                      class="absolute right-0 mt-1 glass-card-static p-3 z-20 w-72 max-h-96 overflow-auto">
                     {% include "habits/work_history_add.html" %}
@@ -68,15 +68,15 @@
                 <span class="text-sm" style="color: var(--text-primary)">
                     {{ t('work.clocked_in') }} {{ work_rec.clock_in.strftime('%H:%M') }} → {{ t('work.clocked_out') }} {{ work_rec.clock_out.strftime('%H:%M') }}
                 </span>
-                <span class="text-xs px-2 py-1 rounded" style="background: rgba(0,0,0,0.04); color: var(--text-secondary);">
+                <span class="text-xs px-2 py-1 rounded" style="background: var(--chip-muted-bg); color: var(--text-secondary);">
                     {{ t('work.worked') }} {{ work_today.worked|work_duration if work_today else '' }}
                 </span>
                 {% if work_today and work_today.overtime %}
-                    <span class="text-xs px-2 py-1 rounded" style="background: rgba(0,0,0,0.04); color: #dc2626;">
+                    <span class="text-xs px-2 py-1 rounded" style="background: var(--chip-muted-bg); color: var(--danger);">
                         {{ t('work.overtime') }} {{ work_today.overtime|work_duration }}
                     </span>
                 {% else %}
-                    <span class="text-xs px-2 py-1 rounded" style="background: rgba(0,0,0,0.04); color: var(--text-muted);">{{ t('work.no_overtime') }}</span>
+                    <span class="text-xs px-2 py-1 rounded" style="background: var(--chip-muted-bg); color: var(--text-muted);">{{ t('work.no_overtime') }}</span>
                 {% endif %}
             </div>
         {% elif work_rec %}

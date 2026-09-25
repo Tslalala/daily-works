@@ -253,6 +253,9 @@ MESSAGES = {
         "settings.opacity": "壁纸透明度",
         "settings.blur": "毛玻璃模糊",
         "settings.color": "配色",
+        "settings.mode": "模式",
+        "settings.light": "浅色",
+        "settings.dark": "深色",
         "settings.lang": "语言",
         # --- toasts ---
         "toast.target_created": "目标已创建",
@@ -551,6 +554,9 @@ MESSAGES = {
         "settings.opacity": "Wallpaper visibility",
         "settings.blur": "Glass blur",
         "settings.color": "Color theme",
+        "settings.mode": "Mode",
+        "settings.light": "Light",
+        "settings.dark": "Dark",
         "settings.lang": "Language",
         # --- toasts ---
         "toast.target_created": "Target created",

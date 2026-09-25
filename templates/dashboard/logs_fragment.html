@@ -8,7 +8,7 @@
         {% if log.log_date != ns.current_date %}
             {% set ns.current_date = log.log_date %}
             <div class="text-xs font-medium mt-4 mb-2" style="color: var(--text-secondary);">
-                {% if not loop.first %}<hr class="mb-2" style="border: none; border-top: 1px solid rgba(0,0,0,0.04);">{% endif %}
+                {% if not loop.first %}<hr class="mb-2" style="border: none; border-top: 1px solid var(--line);">{% endif %}
                 {{ log.log_date.strftime('%Y-%m-%d') }}
                 {% if log.log_date == now.date() %}<span class="accent-text font-semibold">{{ t('dash.today_tag') }}</span>{% endif %}
             </div>

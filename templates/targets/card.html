@@ -24,14 +24,14 @@
                         {% if target.status == "completed" %}
                             <span class="inline-flex items-center justify-center w-5 h-5 rounded-full text-white text-xs flex-shrink-0" style="background: var(--primary);">&#10003;</span>
                         {% elif target.target_type == "deadline" %}
-                            <span class="inline-flex items-center justify-center w-5 h-5 rounded-full text-xs flex-shrink-0" style="background: #fff7ed; color: #ea580c;">!</span>
+                            <span class="inline-flex items-center justify-center w-5 h-5 rounded-full text-xs flex-shrink-0" style="background: #fff7ed; color: var(--warn);">!</span>
                         {% endif %}
                         <a href="/targets/{{ target.id }}" class="text-sm font-medium hover:accent-text {% if target.status == 'completed' %}line-through{% endif %}" style="color: {% if target.status == 'completed' %}var(--text-muted){% else %}var(--text-primary){% endif %}">
                             {{ target.title }}
                         </a>
-                        <span class="text-xs px-1.5 py-0.5 rounded" style="background: rgba(0,0,0,0.04); color: var(--text-muted);">{{ target.target_type|type_label }}</span>
+                        <span class="text-xs px-1.5 py-0.5 rounded" style="background: var(--chip-muted-bg); color: var(--text-muted);">{{ target.target_type|type_label }}</span>
                         <span class="text-xs px-1.5 py-0.5 rounded"
-                            style="{% if target.priority == 1 %}background: #fef2f2; color: #dc2626;{% elif target.priority == 2 %}background: rgba(0,0,0,0.04); color: #ea580c;{% else %}background: rgba(0,0,0,0.04); color: var(--text-muted);{% endif %}">
+                            style="{% if target.priority == 1 %}background: var(--danger-bg); color: var(--danger);{% elif target.priority == 2 %}background: var(--chip-muted-bg); color: var(--warn);{% else %}background: var(--chip-muted-bg); color: var(--text-muted);{% endif %}">
                             {{ target.priority|priority_label_full }}
                         </span>
                     </div>
@@ -49,18 +49,18 @@
                                 hx-target="#target-{{ target.id }}"
                                 hx-swap="outerHTML"
                                 class="text-xs px-2 py-1 rounded transition-colors"
-                                style="background: rgba(0,0,0,0.04); color: var(--text-secondary);"
+                                style="background: var(--chip-muted-bg); color: var(--text-secondary);"
                                 title="{{ t('targets.mark_uncomplete') }}">{{ t('targets.uncomplete') }}</button>
                     {% endif %}
                     <a href="/targets/{{ target.id }}/edit"
                        class="text-xs px-2 py-1 rounded transition-colors"
-                       style="background: rgba(0,0,0,0.04); color: var(--text-secondary);">{{ t('edit') }}</a>
+                       style="background: var(--chip-muted-bg); color: var(--text-secondary);">{{ t('edit') }}</a>
                     <button hx-delete="/api/targets/{{ target.id }}"
                             hx-confirm="{{ t('confirm.target') }}"
                             hx-target="#target-{{ target.id }}"
                             hx-swap="outerHTML"
                             class="text-xs px-2 py-1 rounded transition-colors"
-                            style="background: #fef2f2; color: #dc2626;">{{ t('delete') }}</button>
+                            style="background: var(--danger-bg); color: var(--danger);">{{ t('delete') }}</button>
                 </div>
             </div>
             {% if target.description %}

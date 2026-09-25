@@ -8,6 +8,8 @@
         // Synchronously apply theme + wallpaper BEFORE any rendering to prevent flash
         (function() {
             var root = document.documentElement;
+            var dark = localStorage.getItem('dw-mode') === 'dark';
+            root.setAttribute('data-mode', dark ? 'dark' : 'light');
             var theme = localStorage.getItem('theme');
             var MIGRATE = { green: 'moss', gold: 'amber', wine: 'plum', slate: 'charcoal', purple: 'violet' };
             if (theme && MIGRATE[theme]) {
@@ -25,11 +27,20 @@
             if (theme === 'custom') {
                 var c = localStorage.getItem('dw-custom-color');
                 if (c) {
-                    root.style.setProperty('--primary', c);
-                    root.style.setProperty('--primary-dark', shade(c, -0.25));
-                    root.style.setProperty('--primary-light', shade(c, 0.45));
-                    root.style.setProperty('--primary-bg', shade(c, 0.86));
-                    root.style.setProperty('--primary-subtle', shade(c, 0.86));
+                    if (dark) {
+                        var p = shade(c, 0.45);
+                        root.style.setProperty('--primary', p);
+                        root.style.setProperty('--primary-dark', shade(c, 0.62));
+                        root.style.setProperty('--primary-light', shade(c, 0.55));
+                        root.style.setProperty('--primary-bg', p + '3D');
+                        root.style.setProperty('--primary-subtle', p + '3D');
+                    } else {
+                        root.style.setProperty('--primary', c);
+                        root.style.setProperty('--primary-dark', shade(c, -0.25));
+                        root.style.setProperty('--primary-light', shade(c, 0.45));
+                        root.style.setProperty('--primary-bg', shade(c, 0.86));
+                        root.style.setProperty('--primary-subtle', shade(c, 0.86));
+                    }
                 }
             }
             try {

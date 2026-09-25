@@ -45,7 +45,7 @@
                         {% if row.user.id != user.id %}
                         <form method="post" action="/admin/users/{{ row.user.id }}/delete" class="inline-flex"
                               onsubmit="return confirm('{{ t('admin.confirm_delete') }}')">
-                            <button type="submit" class="btn-ghost text-xs px-2 py-1" style="color: #dc2626;">{{ t('admin.delete_user') }}</button>
+                            <button type="submit" class="btn-ghost text-xs px-2 py-1" style="color: var(--danger);">{{ t('admin.delete_user') }}</button>
                         </form>
                         {% else %}
                         <span class="text-xs" style="color: var(--text-muted);">{{ t('admin.self') }}</span>

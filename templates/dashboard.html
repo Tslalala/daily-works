@@ -17,11 +17,11 @@
             <span class="text-xs" style="color: var(--text-muted)">{{ t('dash.custom_range') }}</span>
             <input type="date" name="start" value="{{ week_ago.isoformat() }}"
                    class="px-2 py-1.5 border rounded-lg text-xs outline-none"
-                   style="border-color: #e2e8f0; background: rgba(255,255,255,0.5);">
+                   style="border-color: var(--line); background: var(--btn-bg);">
             <span style="color: var(--text-muted)">~</span>
             <input type="date" name="end" value="{{ today.isoformat() }}"
                    class="px-2 py-1.5 border rounded-lg text-xs outline-none"
-                   style="border-color: #e2e8f0; background: rgba(255,255,255,0.5);">
+                   style="border-color: var(--line); background: var(--btn-bg);">
             <button type="submit" class="btn-primary text-xs px-3 py-1.5">{{ t('dash.query') }}</button>
         </form>
     </div>

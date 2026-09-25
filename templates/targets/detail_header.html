@@ -24,7 +24,7 @@
                 <!-- Target type badge / editor -->
                 <span x-show="!editType" @click="editType = true"
                       class="text-xs px-1.5 py-0.5 rounded cursor-pointer hover:ring-2 hover:ring-primary transition-all"
-                      style="background: rgba(0,0,0,0.04); color: var(--text-muted);">
+                      style="background: var(--chip-muted-bg); color: var(--text-muted);">
                     {{ target.target_type|type_label }}
                 </span>
                 <form x-show="editType" x-cloak
@@ -45,7 +45,7 @@
                 <!-- Priority badge / editor -->
                 <span x-show="!editPrio" @click="editPrio = true"
                       class="text-xs px-1.5 py-0.5 rounded cursor-pointer hover:ring-2 hover:ring-primary transition-all"
-                      style="{% if target.priority == 1 %}background: #fef2f2; color: #dc2626;{% elif target.priority == 2 %}background: rgba(0,0,0,0.04); color: #ea580c;{% else %}background: rgba(0,0,0,0.04); color: var(--text-muted);{% endif %}">
+                      style="{% if target.priority == 1 %}background: var(--danger-bg); color: var(--danger);{% elif target.priority == 2 %}background: var(--chip-muted-bg); color: var(--warn);{% else %}background: var(--chip-muted-bg); color: var(--text-muted);{% endif %}">
                     {{ target.priority|priority_label_full }}
                 </span>
                 <form x-show="editPrio" x-cloak
@@ -64,7 +64,7 @@
                 </form>
 
                 {% if target.status == "completed" %}
-                    <span class="text-xs px-1.5 py-0.5 rounded" style="background: #ecfdf5; color: #059669;">{{ t('status.completed') }}</span>
+                    <span class="text-xs px-1.5 py-0.5 rounded" style="background: var(--success-bg); color: var(--success);">{{ t('status.completed') }}</span>
                 {% endif %}
             </div>
             {% if target.target_type == "deadline" and target.deadline %}
@@ -86,14 +86,14 @@
             {% endif %}
             <a href="/targets/{{ target.id }}/edit"
                class="px-3 py-1.5 rounded-lg text-sm transition-colors"
-               style="background: rgba(0,0,0,0.04); color: var(--text-secondary);">
+               style="background: var(--chip-muted-bg); color: var(--text-secondary);">
                 {{ t('edit') }}
             </a>
             <button hx-delete="/api/targets/{{ target.id }}"
                     hx-confirm="{{ t('confirm.target') }}"
                     hx-on::after-request="window.location.href='/targets'"
                     class="px-3 py-1.5 rounded-lg text-sm transition-colors"
-                    style="background: #fef2f2; color: #dc2626;">
+                    style="background: var(--danger-bg); color: var(--danger);">
                 {{ t('delete') }}
             </button>
         </div>
@@ -126,7 +126,7 @@
                         style="background: var(--primary); color: white;">{{ t('save') }}</button>
                 <button type="button" @click="editDesc = false"
                         class="text-xs px-3 py-1.5 rounded"
-                        style="background: rgba(0,0,0,0.04); color: var(--text-secondary);">{{ t('cancel') }}</button>
+                        style="background: var(--chip-muted-bg); color: var(--text-secondary);">{{ t('cancel') }}</button>
             </div>
         </form>
     </div>

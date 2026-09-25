@@ -12,7 +12,7 @@
             {{ t('auth.username') }}：{{ user.username }}
         </p>
         {% if changed %}
-            <p class="text-sm mb-4" style="color: #059669;" data-auto-dismiss>{{ t('auth.password_changed') }}</p>
+            <p class="text-sm mb-4" style="color: var(--success);" data-auto-dismiss>{{ t('auth.password_changed') }}</p>
         {% endif %}
         <form method="post" action="/account/password">
             <label class="auth-label">{{ t('auth.old_password') }}</label>
@@ -29,7 +29,7 @@
     <div class="glass-card p-6 mt-6">
         <h2 class="text-sm font-semibold mb-3" style="color: var(--text-primary)">{{ t('auth.appearance_title') }}</h2>
         {% if appearance %}
-            <p class="text-sm mb-4" style="color: #059669;" data-auto-dismiss>{{ t('auth.appearance_saved') }}</p>
+            <p class="text-sm mb-4" style="color: var(--success);" data-auto-dismiss>{{ t('auth.appearance_saved') }}</p>
         {% endif %}
         <form method="post" action="/account/appearance">
             <label class="auth-label">{{ t('auth.overlay_style') }}</label>

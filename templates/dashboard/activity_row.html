@@ -17,7 +17,7 @@
                 hx-target="#act-{{ log.id }}"
                 hx-swap="outerHTML"
                 class="text-xs px-2 py-1 rounded transition-colors"
-                style="background: rgba(0,0,0,0.04); color: var(--text-secondary);">{{ t('edit') }}</button>
+                style="background: var(--chip-muted-bg); color: var(--text-secondary);">{{ t('edit') }}</button>
         <button hx-delete="/api/activity-logs/{{ log.id }}"
                 hx-confirm="{{ t('dash.confirm_delete') }}"
                 hx-target="#act-{{ log.id }}"

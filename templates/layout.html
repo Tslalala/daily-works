@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-CN" x-data="appearance()" x-init="init()" :data-theme="theme">
+<html lang="zh-CN" x-data="appearance()" x-init="init()" :data-theme="theme" :data-mode="mode">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,6 +8,8 @@
         // Synchronously apply theme + wallpaper BEFORE any rendering to prevent flash
         (function() {
             var root = document.documentElement;
+            var dark = localStorage.getItem('dw-mode') === 'dark';
+            root.setAttribute('data-mode', dark ? 'dark' : 'light');
             var theme = localStorage.getItem('theme');
             var MIGRATE = { green: 'moss', gold: 'amber', wine: 'plum', slate: 'charcoal', purple: 'violet' };
             if (theme && MIGRATE[theme]) {
@@ -25,11 +27,20 @@
             if (theme === 'custom') {
                 var c = localStorage.getItem('dw-custom-color');
                 if (c) {
-                    root.style.setProperty('--primary', c);
-                    root.style.setProperty('--primary-dark', shade(c, -0.25));
-                    root.style.setProperty('--primary-light', shade(c, 0.45));
-                    root.style.setProperty('--primary-bg', shade(c, 0.86));
-                    root.style.setProperty('--primary-subtle', shade(c, 0.86));
+                    if (dark) {
+                        var p = shade(c, 0.45);
+                        root.style.setProperty('--primary', p);
+                        root.style.setProperty('--primary-dark', shade(c, 0.62));
+                        root.style.setProperty('--primary-light', shade(c, 0.55));
+                        root.style.setProperty('--primary-bg', p + '3D');
+                        root.style.setProperty('--primary-subtle', p + '3D');
+                    } else {
+                        root.style.setProperty('--primary', c);
+                        root.style.setProperty('--primary-dark', shade(c, -0.25));
+                        root.style.setProperty('--primary-light', shade(c, 0.45));
+                        root.style.setProperty('--primary-bg', shade(c, 0.86));
+                        root.style.setProperty('--primary-subtle', shade(c, 0.86));
+                    }
                 }
             }
             try {
@@ -160,6 +171,15 @@
         <h2>{{ t('settings.heading') }}</h2>
         <p>{{ t('settings.desc') }}</p>
 
+        <!-- Mode -->
+        <label class="ap-label">{{ t('settings.mode') }}</label>
+        <div class="ap-lang">
+            <button type="button" @click="setMode('light')" :class="{ active: mode === 'light' }">{{ t('settings.light') }}</button>
+            <button type="button" @click="setMode('dark')" :class="{ active: mode === 'dark' }">{{ t('settings.dark') }}</button>
+        </div>
+
+        <hr class="ap-div">
+
         <!-- Wallpaper -->
         <label class="ap-label">{{ t('settings.wallpaper') }}</label>
         <div class="swatches">
@@ -167,7 +187,7 @@
             <button type="button"
                     @click="setWallpaper('{{ w }}')"
                     :class="'swatch' + (wallpaper === '{{ w }}' ? ' selected' : '')"
-                    {% if w == 'none' %}style="background-color: #fffdf9;"{% else %}:style="'background-image:url(&quot;/wallpapers/thumbs/{{ w.split('.')[0] }}.jpg&quot;)'"{% endif %}
+                    {% if w == 'none' %}style="background-color: var(--input-bg);"{% else %}:style="'background-image:url(&quot;/wallpapers/thumbs/{{ w.split('.')[0] }}.jpg&quot;)'"{% endif %}
                     :aria-label="{{ t('settings.plain') if w == 'none' else w }}">
                 {% if w == 'none' %}<span>{{ t('settings.plain') }}</span>{% endif %}
             </button>
@@ -218,6 +238,7 @@
         function appearance() {
             return {
                 settingsOpen: false,
+                mode: localStorage.getItem('dw-mode') === 'dark' ? 'dark' : 'light',
                 theme: localStorage.getItem('theme') || 'indigo',
                 customColor: localStorage.getItem('dw-custom-color') || '#c74440',
                 wallpaper: '2.jpeg',
@@ -254,8 +275,18 @@
                             if (typeof s.blur === 'number') this.blur = s.blur;
                         }
                     } catch (e) {}
+                    this.applyMode();
                     this.applyTheme();
                     this.applyWallpaper();
+                },
+                setMode(m) {
+                    this.mode = m;
+                    this.applyMode();
+                },
+                applyMode() {
+                    document.documentElement.dataset.mode = this.mode;
+                    localStorage.setItem('dw-mode', this.mode);
+                    this.applyCustomVars();
                 },
                 shade(hex, f) {
                     var n = parseInt(hex.slice(1), 16), r = n >> 16, g = (n >> 8) & 255, b = n & 255;
@@ -272,11 +303,20 @@
                 applyCustomVars() {
                     var el = document.documentElement;
                     if (this.theme === 'custom') {
-                        el.style.setProperty('--primary', this.customColor);
-                        el.style.setProperty('--primary-dark', this.shade(this.customColor, -0.25));
-                        el.style.setProperty('--primary-light', this.shade(this.customColor, 0.45));
-                        el.style.setProperty('--primary-bg', this.shade(this.customColor, 0.86));
-                        el.style.setProperty('--primary-subtle', this.shade(this.customColor, 0.86));
+                        if (this.mode === 'dark') {
+                            var p = this.shade(this.customColor, 0.45);
+                            el.style.setProperty('--primary', p);
+                            el.style.setProperty('--primary-dark', this.shade(this.customColor, 0.62));
+                            el.style.setProperty('--primary-light', this.shade(this.customColor, 0.55));
+                            el.style.setProperty('--primary-bg', p + '3D');
+                            el.style.setProperty('--primary-subtle', p + '3D');
+                        } else {
+                            el.style.setProperty('--primary', this.customColor);
+                            el.style.setProperty('--primary-dark', this.shade(this.customColor, -0.25));
+                            el.style.setProperty('--primary-light', this.shade(this.customColor, 0.45));
+                            el.style.setProperty('--primary-bg', this.shade(this.customColor, 0.86));
+                            el.style.setProperty('--primary-subtle', this.shade(this.customColor, 0.86));
+                        }
                     } else {
                         var vars = ['--primary', '--primary-dark', '--primary-light', '--primary-bg', '--primary-subtle'];
                         for (var i = 0; i < vars.length; i++) el.style.removeProperty(vars[i]);

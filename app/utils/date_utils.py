@@ -27,16 +27,17 @@ def days_remaining(dt: datetime | None, lang: str = "zh") -> str:
 
 
 def deadline_class(dt: datetime | None) -> str:
+    # Injected into a style="..." attribute, so this must be CSS, not class names.
     if dt is None:
         return ""
     delta = (dt.date() - date.today()).days
     if delta < 0:
-        return "text-red-600 font-bold"
+        return "color: var(--danger); font-weight: 700;"
     elif delta <= 3:
-        return "text-orange-500 font-medium"
+        return "color: var(--warn); font-weight: 500;"
     elif delta <= 7:
-        return "text-yellow-600"
-    return "text-gray-500"
+        return "color: var(--caution);"
+    return "color: var(--text-muted);"
 
 
 def format_dt(dt: datetime | None, fmt="%Y-%m-%d %H:%M") -> str:
