@@ -204,6 +204,14 @@ input[type="checkbox"], input[type="radio"] { accent-color: var(--primary); }
   #target-list .glass-card .flex.items-start.justify-between { flex-wrap: wrap; gap: 12px; }
   #target-list .glass-card .flex.items-center.gap-2.ml-3 { margin-left: 0; flex-wrap: wrap; }
   #habits-list .glass-card > .flex { gap: 12px; flex-wrap: wrap; }
+  /* Milestones: the title drops to its own full-width line so long CJK text
+     stops wrapping a few characters at a time; hover-only buttons become
+     permanently visible because touch devices have no hover. */
+  #milestone-list > div { flex-wrap: wrap; }
+  #milestone-list > div > .flex-1 { flex: 1 1 100%; order: 10; margin-top: 3px; }
+  #milestone-list > div > .opacity-0 { opacity: 1; }
+  #milestone-list form { flex-wrap: wrap; }
+  #milestone-list form > textarea { flex: 1 1 100%; order: 10; margin-top: 6px; }
   .ap-trigger { right: 14px; bottom: 62px; }
   .ap-panel { right: 14px; bottom: 110px; padding: 18px; }
 }
