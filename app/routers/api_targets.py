@@ -192,7 +192,7 @@ async def api_delete_milestone(request: Request, milestone_id: int, db: Session 
     list_html = templates.get_template("targets/milestone_list.html").render({"request": request, "target": t, "lang": get_lang(request)})
     heading_html = f'<h2 id="milestone-heading" class="text-sm font-medium mb-2" style="color: var(--text-primary)" hx-swap-oob="true">{tt(request, "targets.milestones")} ({len(t.milestones)})</h2>'
     progress_html = templates.get_template("targets/progress_section.html").render({"request": request, "target": t, "oob": True, "lang": get_lang(request)})
-    form_html = templates.get_template("targets/milestone_form.html").render({"request": request, "target": t, "oob": True, "lang": get_lang(request)})
+    form_html = templates.get_template("targets/milestone_form.html").render({"request": request, "target": t, "oob": True, "lang": get_lang(request), "now": datetime.now()})
     return HTMLResponse(
         list_html + heading_html + progress_html + form_html,
         headers={"HX-Trigger": json.dumps({"show-toast": {"message": tt(request, "toast.milestone_deleted"), "type": "success"}})}
@@ -221,7 +221,7 @@ async def api_add_milestone(request: Request, target_id: int, db: Session = Depe
     list_html = templates.get_template("targets/milestone_list.html").render({"request": request, "target": t, "lang": get_lang(request)})
     heading_html = f'<h2 id="milestone-heading" class="text-sm font-medium mb-2" style="color: var(--text-primary)" hx-swap-oob="true">{tt(request, "targets.milestones")} ({len(t.milestones)})</h2>'
     progress_html = templates.get_template("targets/progress_section.html").render({"request": request, "target": t, "oob": True, "lang": get_lang(request)})
-    form_html = templates.get_template("targets/milestone_form.html").render({"request": request, "target": t, "oob": True, "lang": get_lang(request)})
+    form_html = templates.get_template("targets/milestone_form.html").render({"request": request, "target": t, "oob": True, "lang": get_lang(request), "now": datetime.now()})
     return HTMLResponse(
         list_html + heading_html + progress_html + form_html,
         headers={"HX-Trigger": json.dumps({"show-toast": {"message": tt(request, "toast.milestone_added"), "type": "success"}})}

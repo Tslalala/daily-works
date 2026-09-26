@@ -9,12 +9,14 @@
           hx-target="#milestone-list"
           hx-swap="outerHTML"
           class="flex items-center gap-2 mt-1">
-        <input type="date" name="suggested_date"
+        <input type="date" name="suggested_date" value="{{ now.strftime('%Y-%m-%d') }}"
                class="text-xs px-1 py-0.5 rounded border"
-               style="border-color: #d1d5db; background: transparent; color: var(--text-primary);">
-        <input type="text" name="title" placeholder="{{ t('targets.milestone_name') }}" required
-               class="text-sm px-1 py-0.5 rounded border flex-1 min-w-0"
-               style="border-color: #d1d5db; background: transparent; color: var(--text-primary);">
+               style="border-color: var(--muted-border); color: var(--text-primary);">
+        <textarea name="title" rows="1" required
+                  placeholder="{{ t('targets.milestone_name') }}"
+                  class="text-sm px-1 py-0.5 rounded border flex-1 min-w-0"
+                  style="border-color: var(--muted-border); color: var(--text-primary); resize: none; overflow: hidden;"
+                  @input="$el.style.height='auto'; $el.style.height=$el.scrollHeight+'px'"></textarea>
         <button type="submit"
                 class="text-xs px-2 py-1 rounded"
                 style="background: var(--primary); color: white;">{{ t('add') }}</button>
