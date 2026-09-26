@@ -196,8 +196,11 @@ input[type="checkbox"], input[type="radio"] { accent-color: var(--primary); }
 @media (max-width: 700px) {
   .site-nav > div > div { height: 64px; }
   .site-nav .text-sm[style] { display: none; }
-  .nav-links { position: fixed; bottom: 0; left: 0; right: 0; z-index: 45; margin: 0; padding: 8px 10px; display: flex; justify-content: space-around; gap: 0; background: var(--nav-bg); border-top: 1px solid var(--line); }
-  .nav-link { padding: 10px 7px; font-size: 12px; }
+  .nav-links { position: fixed; bottom: 0; left: 0; right: 0; z-index: 45; margin: 0; padding: 6px 6px; display: flex; justify-content: space-around; gap: 0; background: var(--nav-bg); border-top: 1px solid var(--line); }
+  /* Higher specificity is needed: the Tailwind text-sm/px-3/py-2 utility
+     classes on each link otherwise win the cascade and blow the labels up
+     until they wrap vertically. Equal slots + nowrap keep one line. */
+  .site-nav .nav-link { flex: 1 1 0; min-width: 0; padding: 9px 4px; font-size: 12px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .site-page { margin: 25px 0 78px; padding: 26px 20px 36px; min-height: calc(100vh - 165px); }
   .site-page h1 { font-size: 35px; }
   #target-list .glass-card, #habits-list .glass-card { padding: 17px 14px; }
@@ -212,6 +215,9 @@ input[type="checkbox"], input[type="radio"] { accent-color: var(--primary); }
   #milestone-list > div > .opacity-0 { opacity: 1; }
   #milestone-list form { flex-wrap: wrap; }
   #milestone-list form > textarea { flex: 1 1 100%; order: 10; margin-top: 6px; }
+  /* Stacked rows blur together; a hairline + breathing room marks each
+     milestone's date row as the start of a new block. */
+  #milestone-list > div + div { border-top: 1px solid var(--line); margin-top: 10px; padding-top: 10px; }
   /* Title + action rows: stack vertically on narrow screens, otherwise the
      flex title (basis 0 / min-content) shrinks to a one-character vertical
      stack. flex-direction:column is deterministic — wrap+100% basis can fit
