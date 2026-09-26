@@ -131,7 +131,7 @@
                         </a>
                         {% if user and user.is_admin %}
                         <a href="/admin"
-                           class="nav-link px-3 py-2 text-sm font-medium transition-colors
+                           class="nav-link nav-admin px-3 py-2 text-sm font-medium transition-colors
                                   {% if request.url.path.startswith('/admin') %}nav-link-active{% endif %}">
                             {{ t('nav.admin') }}
                         </a>

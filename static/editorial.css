@@ -201,12 +201,20 @@ input[type="checkbox"], input[type="radio"] { accent-color: var(--primary); }
      classes on each link otherwise win the cascade and blow the labels up
      until they wrap vertically. Equal slots + nowrap keep one line. */
   .site-nav .nav-link { flex: 1 1 0; min-width: 0; padding: 9px 4px; font-size: 12px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  /* Admin is a desktop-only concern; keep the bottom bar to 4 items. */
+  .nav-links .nav-admin { display: none; }
   .site-page { margin: 25px 0 78px; padding: 26px 20px 36px; min-height: calc(100vh - 165px); }
   .site-page h1 { font-size: 35px; }
   #target-list .glass-card, #habits-list .glass-card { padding: 17px 14px; }
   #target-list .glass-card .flex.items-start.justify-between { flex-wrap: wrap; gap: 12px; }
   #target-list .glass-card .flex.items-center.gap-2.ml-3 { margin-left: 0; flex-wrap: wrap; }
   #habits-list .glass-card > .flex { gap: 12px; flex-wrap: wrap; }
+  /* The check-in group wraps below the title; give it the full width and
+     let the note input absorb the leftover space instead of leaving a dead
+     zone on the right. */
+  #habits-list .glass-card > .flex > .flex.items-center.gap-2 { width: 100%; }
+  #habits-list .glass-card form { flex: 1 1 auto; min-width: 0; }
+  #habits-list .glass-card form > input { flex: 1 1 auto; width: auto; min-width: 0; }
   /* Milestones: the title drops to its own full-width line so long CJK text
      stops wrapping a few characters at a time; hover-only buttons become
      permanently visible because touch devices have no hover. */
