@@ -3,7 +3,7 @@ from pydantic import BaseModel, Field
 
 class HabitCreate(BaseModel):
     name: str = Field(..., max_length=200)
-    icon: str = "📌"
+    icon: str = ""
     description: str | None = None
     frequency: str = Field(default="daily", pattern=r"^(daily|weekly)$")
 

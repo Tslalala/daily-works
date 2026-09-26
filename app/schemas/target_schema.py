@@ -9,6 +9,7 @@ class TargetCreate(BaseModel):
     target_type: str = Field(default="short_term", pattern=r"^(deadline|long_term|short_term)$")
     deadline: datetime | None = None
     priority: int = Field(default=2, ge=1, le=3)
+    badge_style: str | None = None
 
 
 class TargetUpdate(BaseModel):
@@ -19,6 +20,7 @@ class TargetUpdate(BaseModel):
     priority: int | None = Field(None, ge=1, le=3)
     status: str | None = Field(None, pattern=r"^(active|completed|archived)$")
     progress: int | None = Field(None, ge=0, le=100)
+    badge_style: str | None = None
 
 
 class MilestoneCreate(BaseModel):

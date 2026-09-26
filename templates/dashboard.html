@@ -1,23 +1,28 @@
 {% extends "layout.html" %}
-{% block title %}仪表盘 - Daily Planner{% endblock %}
+{% block title %}{{ t('nav.dashboard') }} - Daily Planner{% endblock %}
 {% block content %}
 <div class="max-w-3xl mx-auto">
-    <h1 class="text-xl font-bold mb-4" style="color: var(--text-primary)">📋 动态</h1>
+    <header class="editorial-intro">
+        <div class="editorial-kicker">{{ t('today') }} · {{ today.isoformat() }}</div>
+        <h1>{% set parts = quote.split('——') %}{% if parts|length > 1 %}<span class="quote-text">{{ parts[0] }}</span><span class="quote-author">—— {{ parts[1] }}</span>{% else %}{{ quote }}{% endif %}</h1>
+        <p>{{ t('dash.sub') }}</p>
+    </header>
+    <div class="editorial-kicker">{{ t('dash.recent') }}</div>
 
     {# Custom date range #}
-    <div class="flex items-center gap-2 text-sm mb-4">
+    <div class="editorial-filter flex items-center gap-2 text-sm mb-4">
         <form class="flex items-center gap-2"
               hx-get="/api/activity-logs" hx-target="#activity-logs" hx-swap="innerHTML"
               hx-indicator="#logs-loading">
-            <span class="text-xs" style="color: var(--text-muted)">自定义查询：</span>
+            <span class="text-xs" style="color: var(--text-muted)">{{ t('dash.custom_range') }}</span>
             <input type="date" name="start" value="{{ week_ago.isoformat() }}"
                    class="px-2 py-1.5 border rounded-lg text-xs outline-none"
-                   style="border-color: #e2e8f0; background: rgba(255,255,255,0.5);">
+                   style="border-color: var(--line); background: var(--btn-bg);">
             <span style="color: var(--text-muted)">~</span>
             <input type="date" name="end" value="{{ today.isoformat() }}"
                    class="px-2 py-1.5 border rounded-lg text-xs outline-none"
-                   style="border-color: #e2e8f0; background: rgba(255,255,255,0.5);">
-            <button type="submit" class="btn-primary text-xs px-3 py-1.5">查询</button>
+                   style="border-color: var(--line); background: var(--btn-bg);">
+            <button type="submit" class="btn-primary text-xs px-3 py-1.5">{{ t('dash.query') }}</button>
         </form>
     </div>
 
@@ -25,7 +30,7 @@
     <div id="activity-logs" class="min-h-[300px] relative">
         {% include "dashboard/logs_fragment.html" %}
         <div id="logs-loading" class="htmx-indicator absolute inset-0 glass-card-static flex items-center justify-center">
-            <span class="text-sm" style="color: var(--text-muted)">⏳ 加载中...</span>
+            <span class="text-sm" style="color: var(--text-muted)">{{ t('dash.loading') }}</span>
         </div>
     </div>
 </div>

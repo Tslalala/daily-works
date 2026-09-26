@@ -1,0 +1,17 @@
+<div class="glass-card p-3 mb-2" id="act-{{ log.id }}">
+    <form hx-post="/api/activity-logs/{{ log.id }}/edit"
+          hx-target="#act-{{ log.id }}"
+          hx-swap="outerHTML">
+        <textarea name="description" rows="2" required
+                  class="w-full text-sm p-2 outline-none"
+                  style="border: 1px solid var(--line); background: #fffdf9;">{{ log.description }}</textarea>
+        <div class="flex items-center gap-2 mt-2">
+            <button type="submit" class="btn-primary text-xs px-3 py-1.5">{{ t('save') }}</button>
+            <button type="button"
+                    hx-get="/api/activity-logs/{{ log.id }}/row"
+                    hx-target="#act-{{ log.id }}"
+                    hx-swap="outerHTML"
+                    class="btn-ghost text-xs px-3 py-1.5">{{ t('cancel') }}</button>
+        </div>
+    </form>
+</div>

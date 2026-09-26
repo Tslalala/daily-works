@@ -7,3 +7,5 @@ daily_planner.db
 *.db-journal
 *.db-wal
 *.db-shm
+.zcode/
+wallpaper_high/

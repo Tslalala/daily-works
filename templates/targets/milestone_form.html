@@ -1,0 +1,27 @@
+<div id="milestone-form" class="mt-2" x-data="{ showAdd: false }" {% if oob %}hx-swap-oob="true"{% endif %}>
+    <button x-show="!showAdd" @click="showAdd = true"
+            class="text-xs px-2 py-1 rounded transition-colors"
+            style="background: var(--primary-bg); color: var(--primary);">
+        + {{ t('targets.add_milestone') }}
+    </button>
+    <form x-show="showAdd"
+          hx-post="/api/targets/{{ target.id }}/milestones"
+          hx-target="#milestone-list"
+          hx-swap="outerHTML"
+          class="flex items-center gap-2 mt-1">
+        <input type="date" name="suggested_date" value="{{ now.strftime('%Y-%m-%d') }}"
+               class="text-xs px-1 py-0.5 rounded border"
+               style="border-color: var(--muted-border); color: var(--text-primary);">
+        <textarea name="title" rows="1" required
+                  placeholder="{{ t('targets.milestone_name') }}"
+                  class="text-sm px-1 py-0.5 rounded border flex-1 min-w-0"
+                  style="border-color: var(--muted-border); color: var(--text-primary); resize: none; overflow: hidden;"
+                  @input="$el.style.height='auto'; $el.style.height=$el.scrollHeight+'px'"></textarea>
+        <button type="submit"
+                class="text-xs px-2 py-1 rounded"
+                style="background: var(--primary); color: white;">{{ t('add') }}</button>
+        <button type="button" @click="showAdd = false"
+                class="text-xs px-2 py-1 rounded"
+                style="background: var(--chip-muted-bg); color: var(--text-secondary);">{{ t('cancel') }}</button>
+    </form>
+</div>

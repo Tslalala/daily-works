@@ -1,10 +1,13 @@
 {% extends "layout.html" %}
-{% block title %}目标列表 - Daily Planner{% endblock %}
+{% block title %}{{ t('targets.list_title') }} - Daily Planner{% endblock %}
 {% block content %}
 <div class="flex items-center justify-between mb-6">
-    <h1 class="text-xl font-bold" style="color: var(--text-primary)">🎯 目标列表</h1>
-    <a href="/targets/new" class="btn-primary">
-        + 新建目标
+    <div>
+        <h1 class="text-xl font-bold" style="color: var(--text-primary)">{{ t('targets.list_title') }}</h1>
+        <p class="text-sm mt-0.5" style="color: var(--text-muted)">{{ now.strftime('%Y-%m-%d') }} {{ now|weekday_long }}</p>
+    </div>
+    <a href="/targets/new" class="btn-primary text-2xl px-8 py-2">
+        {{ t('targets.new') }}
     </a>
 </div>
 
@@ -12,34 +15,39 @@
 <div class="flex gap-2 mb-4 flex-wrap">
     <a href="/targets?target_type=deadline"
        class="px-3 py-1.5 rounded-lg text-sm transition-colors"
-       style="{% if current_type == 'deadline' %}background: #fff7ed; color: #ea580c; font-weight: 600;{% else %}background: rgba(0,0,0,0.04); color: var(--text-muted);{% endif %}">
-        有期限
+       style="{% if current_type == 'deadline' %}background: var(--success-bg); color: var(--success); font-weight: 600;{% else %}background: transparent; color: var(--text-muted);{% endif %}">
+        {{ t('ttype.deadline') }}
     </a>
     <a href="/targets?target_type=long_term"
        class="px-3 py-1.5 rounded-lg text-sm transition-colors"
-       style="{% if current_type == 'long_term' %}background: #eff6ff; color: #2563eb; font-weight: 600;{% else %}background: rgba(0,0,0,0.04); color: var(--text-muted);{% endif %}">
-        长期
+       style="{% if current_type == 'long_term' %}background: var(--success-bg); color: var(--success); font-weight: 600;{% else %}background: transparent; color: var(--text-muted);{% endif %}">
+        {{ t('ttype.long_term') }}
     </a>
     <a href="/targets?target_type=short_term"
        class="px-3 py-1.5 rounded-lg text-sm transition-colors"
-       style="{% if current_type == 'short_term' %}background: #ecfdf5; color: #059669; font-weight: 600;{% else %}background: rgba(0,0,0,0.04); color: var(--text-muted);{% endif %}">
-        短期
+       style="{% if current_type == 'short_term' %}background: var(--success-bg); color: var(--success); font-weight: 600;{% else %}background: transparent; color: var(--text-muted);{% endif %}">
+        {{ t('ttype.short_term') }}
+    </a>
+    <a href="/targets"
+       class="px-3 py-1.5 rounded-lg text-sm transition-colors"
+       style="{% if not current_type %}background: var(--success-bg); color: var(--success); font-weight: 600;{% else %}background: transparent; color: var(--text-muted);{% endif %}">
+        {{ t('ttype.all') }}
     </a>
     <span style="color: var(--text-muted)">|</span>
     <a href="/targets?status=active"
        class="px-3 py-1.5 rounded-lg text-sm transition-colors"
-       style="{% if current_status == 'active' or not current_status %}background: var(--primary-subtle); color: var(--primary); font-weight: 600;{% else %}background: rgba(0,0,0,0.04); color: var(--text-muted);{% endif %}">
-        进行中
+       style="{% if current_status == 'active' or not current_status %}background: var(--success-bg); color: var(--success); font-weight: 600;{% else %}background: transparent; color: var(--text-muted);{% endif %}">
+        {{ t('status.active') }}
     </a>
     <a href="/targets?status=completed"
        class="px-3 py-1.5 rounded-lg text-sm transition-colors"
-       style="{% if current_status == 'completed' %}background: #ecfdf5; color: #059669; font-weight: 600;{% else %}background: rgba(0,0,0,0.04); color: var(--text-muted);{% endif %}">
-        已完成
+       style="{% if current_status == 'completed' %}background: var(--success-bg); color: var(--success); font-weight: 600;{% else %}background: transparent; color: var(--text-muted);{% endif %}">
+        {{ t('status.completed') }}
     </a>
     <a href="/targets?status=all"
        class="px-3 py-1.5 rounded-lg text-sm transition-colors"
-       style="{% if current_status == 'all' %}background: var(--primary-subtle); color: var(--primary); font-weight: 600;{% else %}background: rgba(0,0,0,0.04); color: var(--text-muted);{% endif %}">
-        全部
+       style="{% if current_status == 'all' %}background: var(--success-bg); color: var(--success); font-weight: 600;{% else %}background: transparent; color: var(--text-muted);{% endif %}">
+        {{ t('status.all') }}
     </a>
 </div>
 
@@ -51,14 +59,13 @@
         {% endfor %}
     {% else %}
         <div class="text-center py-12" style="color: var(--text-muted);">
-            <div class="text-3xl mb-2">📭</div>
-            <p>暂无目标</p>
-            <p class="text-sm mt-1">点击右上角「+ 新建目标」开始制定计划</p>
+            <p>{{ t('targets.empty') }}</p>
+            <p class="text-sm mt-1">{{ t('targets.empty_hint') }}</p>
         </div>
     {% endif %}
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
+<script src="/static/vendor/sortable.min.js"></script>
 <script>
     var el = document.getElementById('target-list');
     if (el && el.querySelector('.glass-card')) {
@@ -88,13 +95,15 @@
 </style>
 
 <script>
+    var MSG_TARGET_CREATED = {{ t('toast.target_created') | tojson }};
+    var MSG_TARGET_AI_CREATED = {{ t('toast.target_ai_created') | tojson }};
     document.body.addEventListener('target-updated', function() {
         htmx.trigger('#target-list', 'refresh');
     });
     setTimeout(function() {
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.has('created') || urlParams.has('ai_created')) {
-            const msg = urlParams.has('ai_created') ? 'Target created via AI!' : 'Target created!';
+            const msg = urlParams.has('ai_created') ? MSG_TARGET_AI_CREATED : MSG_TARGET_CREATED;
             document.body.dispatchEvent(new CustomEvent('show-toast', {
                 detail: { message: msg, type: 'success' }
             }));

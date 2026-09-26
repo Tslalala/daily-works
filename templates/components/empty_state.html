@@ -1,4 +1,8 @@
-<div class="text-center py-12" style="color: var(--text-muted);">
-    <div class="text-3xl mb-2">📭</div>
-    <p>{{ message|default("暂无内容") }}</p>
+{% extends "layout.html" %}
+{% block title %}{{ t('app.title') }}{% endblock %}
+{% block content %}
+<div class="max-w-xl mx-auto text-center py-24">
+    <p class="text-sm mb-8" style="color: var(--text-muted)">{{ message|default(t('empty.default')) }}</p>
+    <a href="/" class="btn-primary inline-block">{{ t('nav.dashboard') }}</a>
 </div>
+{% endblock %}

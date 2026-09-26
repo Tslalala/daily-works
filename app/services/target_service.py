@@ -1,3 +1,4 @@
+import random
 from datetime import date, datetime
 from typing import List, Optional
 
@@ -7,8 +8,8 @@ from app.models.target import Target, TargetContribution, TargetMilestone
 from app.schemas.target_schema import TargetCreate, TargetUpdate
 
 
-def list_targets(db: Session, target_type: Optional[str] = None, status: Optional[str] = None) -> List[Target]:
-    q = db.query(Target)
+def list_targets(db: Session, user_id: int, target_type: Optional[str] = None, status: Optional[str] = None) -> List[Target]:
+    q = db.query(Target).filter(Target.user_id == user_id)
     if target_type:
         q = q.filter(Target.target_type == target_type)
     if status and status != "all":
@@ -18,20 +19,23 @@ def list_targets(db: Session, target_type: Optional[str] = None, status: Optiona
     return q.order_by(Target.sort_order.asc(), Target.priority.asc(), Target.deadline.asc().nullslast()).all()
 
 
-def get_target(db: Session, target_id: int) -> Optional[Target]:
-    return db.query(Target).filter(Target.id == target_id).first()
+def get_target(db: Session, user_id: int, target_id: int) -> Optional[Target]:
+    return db.query(Target).filter(Target.id == target_id, Target.user_id == user_id).first()
 
 
-def create_target(db: Session, data: TargetCreate) -> Target:
-    t = Target(**data.model_dump())
+def create_target(db: Session, user_id: int, data: TargetCreate) -> Target:
+    d = data.model_dump()
+    if not d.get("badge_style"):
+        d["badge_style"] = str(random.randint(1, 8))
+    t = Target(user_id=user_id, **d)
     db.add(t)
     db.commit()
     db.refresh(t)
     return t
 
 
-def update_target(db: Session, target_id: int, data: TargetUpdate) -> Optional[Target]:
-    t = get_target(db, target_id)
+def update_target(db: Session, user_id: int, target_id: int, data: TargetUpdate) -> Optional[Target]:
+    t = get_target(db, user_id, target_id)
     if not t:
         return None
     for k, v in data.model_dump(exclude_unset=True).items():
@@ -42,8 +46,8 @@ def update_target(db: Session, target_id: int, data: TargetUpdate) -> Optional[T
     return t
 
 
-def delete_target(db: Session, target_id: int) -> bool:
-    t = get_target(db, target_id)
+def delete_target(db: Session, user_id: int, target_id: int) -> bool:
+    t = get_target(db, user_id, target_id)
     if not t:
         return False
     db.delete(t)
@@ -51,8 +55,8 @@ def delete_target(db: Session, target_id: int) -> bool:
     return True
 
 
-def complete_target(db: Session, target_id: int) -> Optional[Target]:
-    t = get_target(db, target_id)
+def complete_target(db: Session, user_id: int, target_id: int) -> Optional[Target]:
+    t = get_target(db, user_id, target_id)
     if not t:
         return None
     t.status = "completed"
@@ -63,8 +67,19 @@ def complete_target(db: Session, target_id: int) -> Optional[Target]:
     return t
 
 
-def update_progress(db: Session, target_id: int, progress: int) -> Optional[Target]:
-    t = get_target(db, target_id)
+def uncomplete_target(db: Session, user_id: int, target_id: int) -> Optional[Target]:
+    t = get_target(db, user_id, target_id)
+    if not t:
+        return None
+    t.status = "active"
+    t.updated_at = datetime.now()
+    db.commit()
+    db.refresh(t)
+    return t
+
+
+def update_progress(db: Session, user_id: int, target_id: int, progress: int) -> Optional[Target]:
+    t = get_target(db, user_id, target_id)
     if not t:
         return None
     t.progress = max(0, min(100, progress))
@@ -78,8 +93,15 @@ def update_progress(db: Session, target_id: int, progress: int) -> Optional[Targ
     return t
 
 
-def toggle_milestone(db: Session, milestone_id: int) -> Optional[TargetMilestone]:
+def _get_owned_milestone(db: Session, user_id: int, milestone_id: int) -> Optional[TargetMilestone]:
     m = db.query(TargetMilestone).filter(TargetMilestone.id == milestone_id).first()
+    if not m or m.target.user_id != user_id:
+        return None
+    return m
+
+
+def toggle_milestone(db: Session, user_id: int, milestone_id: int) -> Optional[TargetMilestone]:
+    m = _get_owned_milestone(db, user_id, milestone_id)
     if not m:
         return None
     m.completed = not m.completed
@@ -156,14 +178,17 @@ def list_recent_contributions(db: Session, target_id: int, days: int = 14) -> li
     ).order_by(TargetContribution.log_date.desc()).all()
 
 
-def reorder_targets(db: Session, ordered_ids: list[int]) -> None:
+def reorder_targets(db: Session, user_id: int, ordered_ids: list[int]) -> None:
     for i, tid in enumerate(ordered_ids):
-        db.query(Target).filter(Target.id == tid).update({"sort_order": i})
+        db.query(Target).filter(Target.id == tid, Target.user_id == user_id).update({"sort_order": i})
     db.commit()
 
 
-def create_milestone(db: Session, target_id: int, title: str, suggested_date=None) -> TargetMilestone:
+def create_milestone(db: Session, user_id: int, target_id: int, title: str, suggested_date=None) -> TargetMilestone:
     from sqlalchemy import func
+    t = get_target(db, user_id, target_id)
+    if not t:
+        raise ValueError("target not found")
     max_order = db.query(func.max(TargetMilestone.sort_order)).filter(
         TargetMilestone.target_id == target_id
     ).scalar() or 0
@@ -177,8 +202,8 @@ def create_milestone(db: Session, target_id: int, title: str, suggested_date=Non
     return m
 
 
-def update_milestone(db: Session, milestone_id: int, title: str, suggested_date=None) -> Optional[TargetMilestone]:
-    m = db.query(TargetMilestone).filter(TargetMilestone.id == milestone_id).first()
+def update_milestone(db: Session, user_id: int, milestone_id: int, title: str, suggested_date=None) -> Optional[TargetMilestone]:
+    m = _get_owned_milestone(db, user_id, milestone_id)
     if not m:
         return None
     m.title = title
@@ -188,8 +213,8 @@ def update_milestone(db: Session, milestone_id: int, title: str, suggested_date=
     return m
 
 
-def delete_milestone(db: Session, milestone_id: int) -> bool:
-    m = db.query(TargetMilestone).filter(TargetMilestone.id == milestone_id).first()
+def delete_milestone(db: Session, user_id: int, milestone_id: int) -> bool:
+    m = _get_owned_milestone(db, user_id, milestone_id)
     if not m:
         return False
     db.delete(m)

@@ -1,15 +1,17 @@
 {% extends "layout.html" %}
-{% block title %}习惯打卡 - Daily Planner{% endblock %}
+{% block title %}{{ t('habits.title') }} - Daily Planner{% endblock %}
 {% block content %}
 <div class="flex items-center justify-between mb-6">
     <div>
-        <h1 class="text-xl font-bold" style="color: var(--text-primary)">✅ 习惯打卡</h1>
-        <p class="text-sm mt-0.5" style="color: var(--text-muted)">{{ now.strftime('%Y年%m月%d日 %A') }}</p>
+        <h1 class="text-xl font-bold" style="color: var(--text-primary)">{{ t('habits.title') }}</h1>
+        <p class="text-sm mt-0.5" style="color: var(--text-muted)">{{ now.strftime('%Y-%m-%d') }} {{ now|weekday_long }}</p>
     </div>
-    <a href="/habits/new" class="btn-primary">
-        + 新建习惯
+    <a href="/habits/new" class="btn-primary text-2xl px-8 py-2">
+        {{ t('habits.new') }}
     </a>
 </div>
+
+{% include "habits/work_clockin_card.html" %}
 
 <div id="habits-list" class="space-y-3">
     {% if habits_data %}
@@ -20,19 +22,19 @@
         {% endfor %}
     {% else %}
         <div class="text-center py-12" style="color: var(--text-muted);">
-            <div class="text-3xl mb-2">📭</div>
-            <p>还没有习惯，点击「+ 新建习惯」添加</p>
-            <p class="text-sm mt-1">例如：每日健身、Duolingo 英语、冥想</p>
+            <p>{{ t('habits.empty') }}</p>
+            <p class="text-sm mt-1">{{ t('habits.empty_hint') }}</p>
         </div>
     {% endif %}
 </div>
 
 <script>
+    var MSG_HABIT_CREATED = {{ t('toast.habit_created') | tojson }};
     setTimeout(function() {
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.has('created')) {
             document.body.dispatchEvent(new CustomEvent('show-toast', {
-                detail: { message: 'Habit created!', type: 'success' }
+                detail: { message: MSG_HABIT_CREATED, type: 'success' }
             }));
             window.history.replaceState({}, '', window.location.pathname);
         }

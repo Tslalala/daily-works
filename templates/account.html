@@ -1,0 +1,57 @@
+{% extends "layout.html" %}
+{% block title %}{{ t('auth.account_title') }} - Daily Planner{% endblock %}
+{% block content %}
+<div class="max-w-md mx-auto">
+    <div class="flex items-center justify-between mb-6">
+        <h1 class="text-xl font-bold" style="color: var(--text-primary)">{{ t('auth.account_title') }}</h1>
+        <span class="text-sm" style="color: var(--primary); font-weight: 600;">{{ user.username }}</span>
+    </div>
+
+    <div class="glass-card p-6">
+        <p class="text-sm mb-4" style="color: var(--text-muted)">
+            {{ t('auth.username') }}：{{ user.username }}
+        </p>
+        {% if changed %}
+            <p class="text-sm mb-4" style="color: var(--success);" data-auto-dismiss>{{ t('auth.password_changed') }}</p>
+        {% endif %}
+        <form method="post" action="/account/password">
+            <label class="auth-label">{{ t('auth.old_password') }}</label>
+            <input type="password" name="old_password" required autocomplete="current-password">
+            <label class="auth-label">{{ t('auth.new_password') }}</label>
+            <input type="password" name="password" required minlength="6" autocomplete="new-password">
+            <label class="auth-label">{{ t('auth.password_confirm') }}</label>
+            <input type="password" name="password2" required minlength="6" autocomplete="new-password">
+            {% if error %}<p class="auth-error">{{ error }}</p>{% endif %}
+            <button type="submit" class="btn-primary auth-submit">{{ t('auth.change_password') }}</button>
+        </form>
+    </div>
+
+    <div class="glass-card p-6 mt-6">
+        <h2 class="text-sm font-semibold mb-3" style="color: var(--text-primary)">{{ t('auth.appearance_title') }}</h2>
+        {% if appearance %}
+            <p class="text-sm mb-4" style="color: var(--success);" data-auto-dismiss>{{ t('auth.appearance_saved') }}</p>
+        {% endif %}
+        <form method="post" action="/account/appearance">
+            <label class="auth-label">{{ t('auth.overlay_style') }}</label>
+            <div class="flex gap-5 mt-2">
+                <label class="flex items-center gap-2 text-sm cursor-pointer" style="color: var(--text-primary)">
+                    <input type="radio" name="overlay_style" value="grid"
+                           {% if (user.overlay_style or 'grid') == 'grid' %}checked{% endif %}>
+                    {{ t('auth.overlay_grid') }}
+                </label>
+                <label class="flex items-center gap-2 text-sm cursor-pointer" style="color: var(--text-primary)">
+                    <input type="radio" name="overlay_style" value="glass"
+                           {% if user.overlay_style == 'glass' %}checked{% endif %}>
+                    {{ t('auth.overlay_glass') }}
+                </label>
+                <label class="flex items-center gap-2 text-sm cursor-pointer" style="color: var(--text-primary)">
+                    <input type="radio" name="overlay_style" value="none"
+                           {% if user.overlay_style == 'none' %}checked{% endif %}>
+                    {{ t('auth.overlay_none') }}
+                </label>
+            </div>
+            <button type="submit" class="btn-primary auth-submit">{{ t('auth.save') }}</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

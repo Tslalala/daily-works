@@ -1,0 +1,28 @@
+<div class="glass-card p-3 mb-2 flex items-start gap-3" id="act-{{ log.id }}">
+    <span class="act-icon mt-0.5">
+        {% if log.action == "create_target" or log.action == "create_habit" or log.action == "update_target" %}+
+        {% elif log.action == "complete_target" %}&#10003;
+        {% elif log.action == "complete_milestone" %}&#10003;
+        {% elif log.action == "checkin_habit" %}&#9679;
+        {% elif log.action == "uncheckin_habit" %}&#8722;
+        {% else %}&#8226;
+        {% endif %}
+    </span>
+    <div class="flex-1 min-w-0">
+        <p class="text-sm" style="color: var(--text-primary)">{{ log.description }}</p>
+        <p class="text-xs mt-0.5" style="color: var(--text-muted)">{{ log.timestamp.strftime('%H:%M') }}</p>
+    </div>
+    <div class="flex items-center gap-2 flex-shrink-0">
+        <button hx-get="/api/activity-logs/{{ log.id }}/edit"
+                hx-target="#act-{{ log.id }}"
+                hx-swap="outerHTML"
+                class="text-xs px-2 py-1 rounded transition-colors"
+                style="background: var(--chip-muted-bg); color: var(--text-secondary);">{{ t('edit') }}</button>
+        <button hx-delete="/api/activity-logs/{{ log.id }}"
+                hx-confirm="{{ t('dash.confirm_delete') }}"
+                hx-target="#act-{{ log.id }}"
+                hx-swap="outerHTML"
+                class="text-xs px-2 py-1 rounded transition-colors"
+                style="background: #fef2f2; color: #dc2626;">{{ t('delete') }}</button>
+    </div>
+</div>

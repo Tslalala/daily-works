@@ -2,6 +2,8 @@
 from datetime import date, datetime, timedelta
 
 from app.database import SessionLocal, init_db
+from app.auth import hash_password
+from app.models.user import User
 from app.models.target import Target, TargetMilestone
 from app.models.habit import Habit, CheckIn
 from app.models.daily_log import DailyLog
@@ -10,6 +12,16 @@ from app.models.daily_log import DailyLog
 def seed():
     init_db()
     db = SessionLocal()
+
+    # Seed data is attributed to the first existing user, or a demo
+    # account created on demand.
+    user = db.query(User).first()
+    if user is None:
+        user = User(username="demo", password_hash=hash_password("demo123456"), is_admin=True)
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+    user_id = user.id
 
     try:
         # Clear existing data
@@ -22,6 +34,7 @@ def seed():
 
         # --- Targets ---
         t1 = Target(
+            user_id=user_id,
             title="硕士毕业论文PPT答辩",
             description="完成PPT制作并熟练掌握答辩内容",
             target_type="deadline",
@@ -30,6 +43,7 @@ def seed():
             progress=40,
         )
         t2 = Target(
+            user_id=user_id,
             title="搭建每日规划器应用",
             description="用 Python + FastAPI 完成每日规划器的开发",
             target_type="short_term",
@@ -37,6 +51,7 @@ def seed():
             progress=0,
         )
         t3 = Target(
+            user_id=user_id,
             title="学习吉他",
             description="系统学习吉他演奏，从基础和弦开始",
             target_type="long_term",
@@ -55,9 +70,9 @@ def seed():
         ])
 
         # --- Habits ---
-        h1 = Habit(name="每日健身", description="保持身体健康", icon="💪")
-        h2 = Habit(name="Duolingo 英语", description="每天学一点英语", icon="📖")
-        h3 = Habit(name="冥想", description="放松身心，专注当下", icon="🧘")
+        h1 = Habit(user_id=user_id, name="每日健身", description="保持身体健康", icon="F")
+        h2 = Habit(user_id=user_id, name="Duolingo 英语", description="每天学一点英语", icon="D")
+        h3 = Habit(user_id=user_id, name="冥想", description="放松身心，专注当下", icon="M")
 
         db.add_all([h1, h2, h3])
         db.flush()
@@ -75,8 +90,8 @@ def seed():
 
         # --- Daily Logs ---
         db.add_all([
-            DailyLog(log_date=today, content="今天是充实的一天，开始了每日规划器的开发。", mood="good"),
-            DailyLog(log_date=today - timedelta(days=1), content="准备答辩材料，进度还差一些。", mood="neutral"),
+            DailyLog(user_id=user_id, log_date=today, content="今天是充实的一天，开始了每日规划器的开发。", mood="good"),
+            DailyLog(user_id=user_id, log_date=today - timedelta(days=1), content="准备答辩材料，进度还差一些。", mood="neutral"),
         ])
 
         db.commit()
@@ -85,6 +100,7 @@ def seed():
         print(f"   Habits: {db.query(Habit).count()}")
         print(f"   CheckIns: {db.query(CheckIn).count()}")
         print(f"   DailyLogs: {db.query(DailyLog).count()}")
+        print(f"   User: {user.username} (id {user_id})")
 
     finally:
         db.close()

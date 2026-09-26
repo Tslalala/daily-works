@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ t('auth.register_title') }} - Daily Works</title>
+    <script>
+        // Synchronously apply theme + wallpaper BEFORE any rendering to prevent flash
+        (function() {
+            var root = document.documentElement;
+            var dark = localStorage.getItem('dw-mode') === 'dark';
+            root.setAttribute('data-mode', dark ? 'dark' : 'light');
+            var theme = localStorage.getItem('theme');
+            var MIGRATE = { green: 'moss', gold: 'amber', wine: 'plum', slate: 'charcoal', purple: 'violet' };
+            if (theme && MIGRATE[theme]) {
+                theme = MIGRATE[theme];
+                localStorage.setItem('theme', theme);
+            }
+            if (theme) root.setAttribute('data-theme', theme);
+            function shade(hex, f) {
+                var n = parseInt(hex.slice(1), 16), r = n >> 16, g = (n >> 8) & 255, b = n & 255;
+                r = Math.max(0, Math.min(255, Math.round(f < 0 ? r * (1 + f) : r + (255 - r) * f)));
+                g = Math.max(0, Math.min(255, Math.round(f < 0 ? g * (1 + f) : g + (255 - g) * f)));
+                b = Math.max(0, Math.min(255, Math.round(f < 0 ? b * (1 + f) : b + (255 - b) * f)));
+                return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+            }
+            if (theme === 'custom') {
+                var c = localStorage.getItem('dw-custom-color');
+                if (c) {
+                    if (dark) {
+                        var p = shade(c, 0.45);
+                        root.style.setProperty('--primary', p);
+                        root.style.setProperty('--primary-dark', shade(c, 0.62));
+                        root.style.setProperty('--primary-light', shade(c, 0.55));
+                        root.style.setProperty('--primary-bg', p + '3D');
+                        root.style.setProperty('--primary-subtle', p + '3D');
+                    } else {
+                        root.style.setProperty('--primary', c);
+                        root.style.setProperty('--primary-dark', shade(c, -0.25));
+                        root.style.setProperty('--primary-light', shade(c, 0.45));
+                        root.style.setProperty('--primary-bg', shade(c, 0.86));
+                        root.style.setProperty('--primary-subtle', shade(c, 0.86));
+                    }
+                }
+            }
+            try {
+                var s = JSON.parse(localStorage.getItem('dw-appearance') || 'null');
+                if (s && s.wallpaper && s.wallpaper !== 'none') {
+                    root.style.setProperty('--wallpaper', "url('/wallpapers/" + s.wallpaper + "')");
+                    root.style.setProperty('--wallpaper-opacity', String(typeof s.opacity === 'number' ? s.opacity : 0.38));
+                    root.style.setProperty('--wallpaper-blur', (typeof s.blur === 'number' ? s.blur : 3) + 'px');
+                }
+            } catch (e) {}
+        })();
+    </script>
+    <script src="/static/vendor/tailwind.js"></script>
+    <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+    <link rel="stylesheet" href="/static/editorial.css?v={{ css_version }}">
+</head>
+<body>
+    <div class="auth-wrap">
+        <div class="auth-card">
+            <div class="app-title auth-brand">Daily Works<span class="brand-mark">.</span></div>
+            <p class="auth-subtitle">{{ t('auth.register_title') }} · {{ t('auth.subtitle') }}</p>
+
+            <form method="post" action="/register">
+                <label class="auth-label">{{ t('auth.username') }}</label>
+                <input type="text" name="username" required autofocus minlength="1" maxlength="30"
+                       autocomplete="username" placeholder="{{ t('auth.username_ph') }}">
+                <label class="auth-label">{{ t('auth.password') }}</label>
+                <input type="password" name="password" required minlength="6"
+                       autocomplete="new-password" placeholder="{{ t('auth.password_ph') }}">
+                <label class="auth-label">{{ t('auth.password_confirm') }}</label>
+                <input type="password" name="password2" required minlength="6"
+                       autocomplete="new-password" placeholder="{{ t('auth.password_confirm_ph') }}">
+                {% if error %}<p class="auth-error">{{ error }}</p>{% endif %}
+                <button type="submit" class="btn-primary auth-submit">{{ t('auth.register_btn') }}</button>
+            </form>
+
+            <p class="auth-alt">{{ t('auth.have_account') }} <a href="/login">{{ t('auth.go_login') }}</a></p>
+        </div>
+
+        <div class="auth-lang">
+            <form method="post" action="/api/settings/lang" id="lang-form" class="ap-lang">
+                <button type="submit" name="lang" value="zh" class="{% if lang == 'zh' %}active{% endif %}">中文</button>
+                <button type="submit" name="lang" value="en" class="{% if lang == 'en' %}active{% endif %}">English</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            var form = document.getElementById('lang-form');
+            if (!form) return;
+            form.addEventListener('submit', function(ev) {
+                var lang = ev.submitter && ev.submitter.value;
+                if (!lang) return;
+                ev.preventDefault();
+                fetch('/api/settings/lang', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: 'lang=' + encodeURIComponent(lang)
+                }).then(function() { location.reload(); });
+            });
+        })();
+    </script>
+</body>
+</html>

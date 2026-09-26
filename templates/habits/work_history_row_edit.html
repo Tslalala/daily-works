@@ -1,0 +1,26 @@
+{% set row_id = "work-row-" + rec.work_date.isoformat() %}
+{# Saving today's row refreshes the whole card so the main state stays in sync #}
+{% set save_target = "#work-clockin-card" if rec.work_date == now.date() else "#" + row_id %}
+<div class="text-xs" id="{{ row_id }}">
+    <div class="flex items-center justify-between mb-1">
+        <span style="color: var(--text-primary)">{{ rec.work_date.strftime('%m-%d') }}
+            <span style="color: var(--text-muted)">{{ rec.work_date|weekday_long }}</span></span>
+        <button hx-get="/api/work/history/{{ rec.work_date.isoformat() }}/row"
+                hx-target="#{{ row_id }}"
+                hx-swap="outerHTML"
+                class="px-1" style="color: var(--text-muted);">{{ t('cancel') }}</button>
+    </div>
+    <form hx-post="/api/work/history/{{ rec.work_date.isoformat() }}/edit"
+          hx-target="{{ save_target }}"
+          hx-swap="outerHTML" class="flex items-center gap-1.5">
+        <input type="time" name="clock_in" step="60" value="{{ rec.clock_in.strftime('%H:%M') }}"
+               class="flex-1 min-w-0 px-1.5 py-1 border rounded outline-none"
+               style="border-color: #e2e8f0; background: rgba(255,255,255,0.6);">
+        <span style="color: var(--text-muted)">→</span>
+        <input type="time" name="clock_out" step="60"
+               value="{{ rec.clock_out.strftime('%H:%M') if rec.clock_out else '' }}"
+               class="flex-1 min-w-0 px-1.5 py-1 border rounded outline-none"
+               style="border-color: #e2e8f0; background: rgba(255,255,255,0.6);">
+        <button type="submit" class="px-2 py-1 rounded whitespace-nowrap" style="background: #ecfdf5; color: #059669;">{{ t('work.save') }}</button>
+    </form>
+</div>

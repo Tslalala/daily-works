@@ -1,10 +1,14 @@
+import json
 from datetime import date, datetime, timedelta
 
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from sqlalchemy.orm import Session
 
+from app.auth import get_current_user
 from app.database import get_db
+from app.i18n import get_lang, tt
+from app.models.user import User
 from app.schemas.habit_schema import HabitCreate, HabitUpdate
 from app.services.activity_service import log_action, remove_checkin_log
 from app.services.habit_service import (
@@ -16,12 +20,12 @@ from app.utils.date_utils import build_calendar
 router = APIRouter(prefix="/api")
 
 
-def _build_history_response(request: Request, habit_id: int, focus_date: date, db: Session) -> HTMLResponse:
+def _build_history_response(request: Request, habit_id: int, focus_date: date, db: Session, user_id: int) -> HTMLResponse:
     """Build the history calendar fragment response for a habit."""
     from app.models.habit import CheckIn
-    h = get_habit(db, habit_id)
+    h = get_habit(db, user_id, habit_id)
     if not h:
-        return HTMLResponse("习惯不存在", status_code=404)
+        return HTMLResponse(tt(request, "habits.not_found"), status_code=404)
     dates = get_checkin_history(db, habit_id, days=30)
     today = date.today()
     start = today - timedelta(days=29)
@@ -36,11 +40,11 @@ def _build_history_response(request: Request, habit_id: int, focus_date: date, d
             notes_map[c.checkin_date] = c.note
             checkins_with_notes.append(c)
 
-    calendar_days, checked_count = build_calendar(dates, notes_map=notes_map)
+    calendar_days, checked_count = build_calendar(dates, notes_map=notes_map, lang=get_lang(request))
     focus_checked = focus_date in dates
     focus_note = notes_map.get(focus_date, "")
 
-    return templates.TemplateResponse("habits/history_calendar.html", {
+    return templates.TemplateResponse(request, "habits/history_calendar.html", {
         "request": request, "habit": h, "checkin_dates": dates,
         "calendar_days": calendar_days, "checked_count": checked_count,
         "checkins_with_notes": checkins_with_notes,
@@ -51,78 +55,81 @@ def _build_history_response(request: Request, habit_id: int, focus_date: date, d
 
 
 @router.post("/habits")
-async def api_create_habit(request: Request, db: Session = Depends(get_db)):
+async def api_create_habit(request: Request, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
     form = await request.form()
     h = create_habit(
         db,
+        user.id,
         name=form.get("name"),
-        icon=form.get("icon", "📌"),
+        icon=form.get("icon") or "",
         description=form.get("description") or None,
         frequency=form.get("frequency", "daily"),
+        badge_style=form.get("badge_style") or None,
     )
-    log_action(db, "create_habit", f"创建了习惯「{h.name}」{h.icon}", target_type="habit", target_id=h.id)
+    log_action(db, user.id, "create_habit", f"创建了习惯「{h.name}」", target_type="habit", target_id=h.id)
     return RedirectResponse(url="/habits?created=1", status_code=303)
 
 
 @router.put("/habits/{habit_id}", response_class=HTMLResponse)
-async def api_update_habit(request: Request, habit_id: int, db: Session = Depends(get_db)):
+async def api_update_habit(request: Request, habit_id: int, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
     form = await request.form()
     h = update_habit(
-        db, habit_id,
+        db, user.id, habit_id,
         name=form.get("name"),
         icon=form.get("icon"),
         description=form.get("description") or None,
         frequency=form.get("frequency"),
+        badge_style=form.get("badge_style") or None,
     )
     if not h:
         return HTMLResponse("Habit not found", status_code=404)
-    return templates.TemplateResponse("habits/card.html", {
+    return templates.TemplateResponse(request, "habits/card.html", {
         "request": request, "habit": h, "checkin": None, "streak": get_streak(db, habit_id),
-    }, headers={"HX-Trigger": '{"show-toast": {"message": "Habit updated!", "type": "success"}}'})
+    }, headers={"HX-Trigger": json.dumps({"show-toast": {"message": tt(request, "toast.habit_updated"), "type": "success"}})})
 
 
 @router.delete("/habits/{habit_id}")
-async def api_delete_habit(habit_id: int, db: Session = Depends(get_db)):
-    ok = delete_habit(db, habit_id)
+async def api_delete_habit(request: Request, habit_id: int, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
+    ok = delete_habit(db, user.id, habit_id)
     if not ok:
         return HTMLResponse("Habit not found", status_code=404)
-    return HTMLResponse("", headers={"HX-Trigger": '{"show-toast": {"message": "Habit deleted", "type": "success"}}'})
+    return HTMLResponse("", headers={"HX-Trigger": json.dumps({"show-toast": {"message": tt(request, "toast.habit_deleted"), "type": "success"}})})
 
 
 @router.post("/checkins/{habit_id}", response_class=HTMLResponse)
-async def api_checkin(request: Request, habit_id: int, db: Session = Depends(get_db)):
+async def api_checkin(request: Request, habit_id: int, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
     form = await request.form()
     note = form.get("note", "").strip()
-    c = checkin(db, habit_id, note=note)
-    h = get_habit(db, habit_id)
+    c = checkin(db, user.id, habit_id, note=note)
+    h = get_habit(db, user.id, habit_id)
     if not h:
         return HTMLResponse("Habit not found", status_code=404)
     streak = get_streak(db, habit_id)
     if c and c.checkin_date == date.today():
-        log_action(db, "checkin_habit", f"完成了习惯「{h.name}」{h.icon}打卡", target_type="habit", target_id=habit_id)
-    return templates.TemplateResponse("habits/card.html", {
+        log_action(db, user.id, "checkin_habit", f"完成了习惯「{h.name}」打卡", target_type="habit", target_id=habit_id)
+    return templates.TemplateResponse(request, "habits/card.html", {
         "request": request, "habit": h, "checkin": c if c and c.checkin_date == date.today() else None, "streak": streak,
-    }, headers={"HX-Trigger": '{"show-toast": {"message": "Check-in done!", "type": "success"}}'})
+    }, headers={"HX-Trigger": json.dumps({"show-toast": {"message": tt(request, "toast.checkin_done"), "type": "success"}})})
 
 
 @router.delete("/checkins/{checkin_id}", response_class=HTMLResponse)
-async def api_uncheckin(request: Request, checkin_id: int, db: Session = Depends(get_db)):
+async def api_uncheckin(request: Request, checkin_id: int, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
     from app.models.habit import CheckIn
     chk = db.query(CheckIn).filter(CheckIn.id == checkin_id).first()
-    if not chk:
+    if not chk or chk.habit.user_id != user.id:
         return HTMLResponse("Check-in not found", status_code=404)
     habit_id = chk.habit_id
-    uncheckin(db, checkin_id)
-    remove_checkin_log(db, habit_id)
-    h = get_habit(db, habit_id)
+    uncheckin(db, user.id, checkin_id)
+    remove_checkin_log(db, user.id, habit_id)
+    h = get_habit(db, user.id, habit_id)
     streak = get_streak(db, habit_id)
-    return templates.TemplateResponse("habits/card.html", {
+    return templates.TemplateResponse(request, "habits/card.html", {
         "request": request, "habit": h, "checkin": None, "streak": streak,
-    }, headers={"HX-Trigger": '{"show-toast": {"message": "Check-in undone", "type": "success"}}'})
+    }, headers={"HX-Trigger": json.dumps({"show-toast": {"message": tt(request, "toast.checkin_undone"), "type": "success"}})})
 
 
 @router.get("/habits/{habit_id}/history", response_class=HTMLResponse)
-async def api_habit_history(request: Request, habit_id: int, db: Session = Depends(get_db)):
+async def api_habit_history(request: Request, habit_id: int, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
     focus = request.query_params.get("focus", "")
     focus_date = None
     if focus:
@@ -132,13 +139,16 @@ async def api_habit_history(request: Request, habit_id: int, db: Session = Depen
             pass
     if not focus_date:
         focus_date = date.today()
-    return _build_history_response(request, habit_id, focus_date, db)
+    return _build_history_response(request, habit_id, focus_date, db, user.id)
 
 
 @router.post("/habits/{habit_id}/toggle-date", response_class=HTMLResponse)
-async def api_toggle_date(request: Request, habit_id: int, db: Session = Depends(get_db)):
+async def api_toggle_date(request: Request, habit_id: int, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
     from app.models.habit import CheckIn
     form = await request.form()
+    h = get_habit(db, user.id, habit_id)
+    if not h:
+        return HTMLResponse(tt(request, "habits.not_found"), status_code=404)
     d = date.fromisoformat(form.get("date"))
 
     existing = db.query(CheckIn).filter(
@@ -153,13 +163,16 @@ async def api_toggle_date(request: Request, habit_id: int, db: Session = Depends
         db.add(CheckIn(habit_id=habit_id, checkin_date=d, note=None))
         db.commit()
 
-    return _build_history_response(request, habit_id, d, db)
+    return _build_history_response(request, habit_id, d, db, user.id)
 
 
 @router.post("/habits/{habit_id}/save-note", response_class=HTMLResponse)
-async def api_save_note(request: Request, habit_id: int, db: Session = Depends(get_db)):
+async def api_save_note(request: Request, habit_id: int, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
     from app.models.habit import CheckIn
     form = await request.form()
+    h = get_habit(db, user.id, habit_id)
+    if not h:
+        return HTMLResponse(tt(request, "habits.not_found"), status_code=404)
     d = date.fromisoformat(form.get("date"))
     note = form.get("note", "").strip()
 
@@ -175,4 +188,4 @@ async def api_save_note(request: Request, habit_id: int, db: Session = Depends(g
         db.add(CheckIn(habit_id=habit_id, checkin_date=d, note=note or None))
         db.commit()
 
-    return _build_history_response(request, habit_id, d, db)
+    return _build_history_response(request, habit_id, d, db, user.id)
