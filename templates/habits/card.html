@@ -8,7 +8,7 @@
                 <a href="/habits/{{ habit.id }}" class="text-sm font-medium hover:accent-text" style="color: var(--text-primary)">{{ habit.name }}</a>
                 <div class="flex items-center gap-2 text-xs" style="color: var(--text-muted)">
                     {% if streak > 0 %}
-                        <span class="font-medium" style="color: #ea580c;">{{ t('habits.streak', n=streak) }}</span>
+                        <span class="font-medium" style="color: var(--warn);">{{ t('habits.streak', n=streak) }}</span>
                     {% else %}
                         <span>{{ t('habits.not_started') }}</span>
                     {% endif %}
@@ -19,7 +19,7 @@
             {% if checkin %}
                 <div class="text-right">
                     <div class="flex items-center gap-1">
-                        <span class="text-xs px-2 py-1 rounded inline-flex items-center gap-1" style="background: #ecfdf5; color: #059669;">
+                        <span class="text-xs px-2 py-1 rounded inline-flex items-center gap-1" style="background: var(--success-bg); color: var(--success);">
                             <span>&#10003;</span>
                             <span>{{ checkin.created_at.strftime('%H:%M') if checkin.created_at else t('habits.checked') }}</span>
                         </span>

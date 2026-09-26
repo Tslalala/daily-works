@@ -13,7 +13,7 @@
                 <div>
                     <h1 class="text-xl font-bold" style="color: var(--text-primary)">{{ habit.name }}</h1>
                     {% if streak > 0 %}
-                        <p class="text-sm font-medium" style="color: #ea580c;">{{ t('habits.streak_detail_one' if streak == 1 else 'habits.streak_detail', n=streak) }}</p>
+                        <p class="text-sm font-medium" style="color: var(--warn);">{{ t('habits.streak_detail_one' if streak == 1 else 'habits.streak_detail', n=streak) }}</p>
                     {% else %}
                         <p class="text-sm" style="color: var(--text-muted)">{{ t('habits.not_today') }}</p>
                     {% endif %}

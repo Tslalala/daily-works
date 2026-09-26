@@ -21,6 +21,6 @@
                value="{{ rec.clock_out.strftime('%H:%M') if rec.clock_out else '' }}"
                class="flex-1 min-w-0 px-1.5 py-1 border rounded outline-none"
                style="border-color: #e2e8f0; background: rgba(255,255,255,0.6);">
-        <button type="submit" class="px-2 py-1 rounded whitespace-nowrap" style="background: #ecfdf5; color: #059669;">{{ t('work.save') }}</button>
+        <button type="submit" class="px-2 py-1 rounded whitespace-nowrap" style="background: var(--success-bg); color: var(--success);">{{ t('work.save') }}</button>
     </form>
 </div>

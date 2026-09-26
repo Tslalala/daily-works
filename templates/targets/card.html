@@ -42,7 +42,7 @@
                                 hx-target="#target-{{ target.id }}"
                                 hx-swap="outerHTML"
                                 class="text-xs px-2 py-1 rounded transition-colors"
-                                style="background: #ecfdf5; color: #059669;"
+                                style="background: var(--success-bg); color: var(--success);"
                                 title="{{ t('targets.mark_complete') }}">{{ t('targets.complete') }}</button>
                     {% else %}
                         <button hx-post="/api/targets/{{ target.id }}/uncomplete"
@@ -72,9 +72,9 @@
             <!-- Progress bar -->
             <div class="mt-3">
                 <div class="flex items-center gap-2">
-                    <div class="flex-1 rounded-full h-2" style="background: rgba(0,0,0,0.06);">
+                    <div class="flex-1 rounded-full h-2" style="background: var(--chip-muted-bg);">
                         <div class="h-2 rounded-full transition-all duration-300"
-                             style="width: {{ target.progress }}%; background: {% if target.progress == 100 %}var(--primary){% elif target.progress > 0 %}var(--primary){% else %}rgba(0,0,0,0.08){% endif %};"></div>
+                             style="width: {{ target.progress }}%; background: {% if target.progress == 100 %}var(--primary){% elif target.progress > 0 %}var(--primary){% else %}var(--chip-muted-bg){% endif %};"></div>
                     </div>
                     <span class="text-xs w-8 text-right" style="color: var(--text-muted)">{{ target.progress }}%</span>
                 </div>

@@ -212,6 +212,16 @@ input[type="checkbox"], input[type="radio"] { accent-color: var(--primary); }
   #milestone-list > div > .opacity-0 { opacity: 1; }
   #milestone-list form { flex-wrap: wrap; }
   #milestone-list form > textarea { flex: 1 1 100%; order: 10; margin-top: 6px; }
+  /* Title + action rows: stack vertically on narrow screens, otherwise the
+     flex title (basis 0 / min-content) shrinks to a one-character vertical
+     stack. flex-direction:column is deterministic — wrap+100% basis can fit
+     exactly and skip the line break. */
+  #detail-header > .flex { flex-direction: column; align-items: stretch; }
+  #detail-header > .flex > .flex-shrink-0 { margin-top: 12px; }
+  #target-list .glass-card .flex.items-start.justify-between { flex-direction: column; align-items: stretch; }
+  #target-list .glass-card .flex.items-start.justify-between > .flex-shrink-0 { margin-left: 0; }
+  .glass-card.p-6 > .flex.items-start.justify-between { flex-direction: column; align-items: stretch; }
+  .glass-card.p-6 > .flex.items-start.justify-between > :last-child { margin-top: 12px; }
   .ap-trigger { right: 14px; bottom: 62px; }
   .ap-panel { right: 14px; bottom: 110px; padding: 18px; }
 }
