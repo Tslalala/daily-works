@@ -193,6 +193,10 @@ input[type="checkbox"], input[type="radio"] { accent-color: var(--primary); }
 
 /* ===== Activity timeline glyph (replaces emoji) ===== */
 .act-icon { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0; background: var(--primary-subtle); color: var(--primary); font: 600 12px Arial, sans-serif; }
+
+/* Hairline between milestone rows (all viewports): stacked rows blur
+   together without it, so each date row reads as the start of a block. */
+#milestone-list > div + div { border-top: 1px solid var(--line); margin-top: 10px; padding-top: 10px; }
 @media (max-width: 700px) {
   .site-nav > div > div { height: 64px; }
   .site-nav .text-sm[style] { display: none; }
@@ -223,9 +227,6 @@ input[type="checkbox"], input[type="radio"] { accent-color: var(--primary); }
   #milestone-list > div > .opacity-0 { opacity: 1; }
   #milestone-list form { flex-wrap: wrap; }
   #milestone-list form > textarea { flex: 1 1 100%; order: 10; margin-top: 6px; }
-  /* Stacked rows blur together; a hairline + breathing room marks each
-     milestone's date row as the start of a new block. */
-  #milestone-list > div + div { border-top: 1px solid var(--line); margin-top: 10px; padding-top: 10px; }
   /* Title + action rows: stack vertically on narrow screens, otherwise the
      flex title (basis 0 / min-content) shrinks to a one-character vertical
      stack. flex-direction:column is deterministic — wrap+100% basis can fit
