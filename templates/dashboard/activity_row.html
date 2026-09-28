@@ -1,10 +1,10 @@
 <div class="glass-card p-3 mb-2 flex items-start gap-3" id="act-{{ log.id }}">
     <span class="act-icon mt-0.5">
-        {% if log.action == "create_target" or log.action == "create_habit" or log.action == "update_target" %}+
+        {% if log.action == "create_target" or log.action == "create_habit" or log.action == "update_target" or log.action == "add_milestone" %}+
         {% elif log.action == "complete_target" %}&#10003;
         {% elif log.action == "complete_milestone" %}&#10003;
         {% elif log.action == "checkin_habit" %}&#9679;
-        {% elif log.action == "uncheckin_habit" %}&#8722;
+        {% elif log.action == "uncheckin_habit" or log.action == "delete_milestone" %}&#8722;
         {% else %}&#8226;
         {% endif %}
     </span>

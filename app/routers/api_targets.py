@@ -175,6 +175,7 @@ async def api_update_milestone(request: Request, milestone_id: int, db: Session 
     if not m:
         return HTMLResponse("", status_code=404)
     t = get_target(db, user.id, m.target_id)
+    log_action(db, user.id, "update_milestone", f"更新了「{t.title}」里程碑「{m.title}」", target_id=m.id)
     list_html = templates.get_template("targets/milestone_list.html").render({"request": request, "target": t, "lang": get_lang(request)})
     heading_html = f'<h2 id="milestone-heading" class="text-sm font-medium mb-2" style="color: var(--text-primary)" hx-swap-oob="true">{tt(request, "targets.milestones")} ({len(t.milestones)})</h2>'
     return HTMLResponse(list_html + heading_html)
@@ -186,9 +187,12 @@ async def api_delete_milestone(request: Request, milestone_id: int, db: Session 
     if not m:
         return HTMLResponse("", status_code=404)
     target_id = m.target_id
+    m_title = m.title
+    t = get_target(db, user.id, target_id)
     delete_milestone(db, user.id, milestone_id)
     recalculate_milestone_progress(db, target_id)
     t = get_target(db, user.id, target_id)
+    log_action(db, user.id, "delete_milestone", f"删除了「{t.title}」里程碑「{m_title}」", target_id=milestone_id)
     list_html = templates.get_template("targets/milestone_list.html").render({"request": request, "target": t, "lang": get_lang(request)})
     heading_html = f'<h2 id="milestone-heading" class="text-sm font-medium mb-2" style="color: var(--text-primary)" hx-swap-oob="true">{tt(request, "targets.milestones")} ({len(t.milestones)})</h2>'
     progress_html = templates.get_template("targets/progress_section.html").render({"request": request, "target": t, "oob": True, "lang": get_lang(request)})
@@ -213,11 +217,12 @@ async def api_add_milestone(request: Request, target_id: int, db: Session = Depe
         except ValueError:
             pass
     try:
-        create_milestone(db, user.id, target_id, title, suggested_date=suggested_date)
+        m = create_milestone(db, user.id, target_id, title, suggested_date=suggested_date)
     except ValueError:
         return HTMLResponse("Target not found", status_code=404)
     recalculate_milestone_progress(db, target_id)
     t = get_target(db, user.id, target_id)
+    log_action(db, user.id, "add_milestone", f"给「{t.title}」添加了里程碑「{m.title}」", target_id=m.id)
     list_html = templates.get_template("targets/milestone_list.html").render({"request": request, "target": t, "lang": get_lang(request)})
     heading_html = f'<h2 id="milestone-heading" class="text-sm font-medium mb-2" style="color: var(--text-primary)" hx-swap-oob="true">{tt(request, "targets.milestones")} ({len(t.milestones)})</h2>'
     progress_html = templates.get_template("targets/progress_section.html").render({"request": request, "target": t, "oob": True, "lang": get_lang(request)})
