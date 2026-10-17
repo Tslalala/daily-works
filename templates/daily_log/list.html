@@ -1,6 +1,7 @@
 {% extends "layout.html" %}
 {% block title %}{{ t('dlog.title') }} - Daily Planner{% endblock %}
 {% block content %}
+<div class="max-w-3xl mx-auto">
 <div class="flex items-center justify-between mb-6">
     <div>
         <h1 class="text-xl font-bold" style="color: var(--text-primary)">{{ t('dlog.title') }}</h1>
@@ -40,4 +41,5 @@
         <p class="text-sm mt-1">{{ t('dlog.empty_hint') }}</p>
     </div>
 {% endif %}
+</div>
 {% endblock %}
