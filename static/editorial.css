@@ -198,8 +198,15 @@ input[type="checkbox"], input[type="radio"] { accent-color: var(--primary); }
    together without it, so each date row reads as the start of a block. */
 #milestone-list > div + div { border-top: 1px solid var(--line); margin-top: 10px; padding-top: 10px; }
 
+/* Milestone row layout (all viewports): row 1 = checkbox + date, action
+   buttons pinned to the right of that row (ml-auto on the first one);
+   the title drops to its own full-width line. Scoped to .milestone-block
+   so the inline edit form (no such class) is not affected. */
+#milestone-list .milestone-block > .flex { flex-wrap: wrap; }
+#milestone-list .milestone-block > .flex > .flex-1 { flex: 1 1 100%; order: 10; margin-top: 3px; }
+
 /* ===== Milestone images (dream album) ===== */
-.mimg-strip { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 6px; padding-left: 112px; }
+.mimg-strip { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 6px; }
 .mimg-item { position: relative; display: inline-block; }
 .mimg-thumb { display: block; width: 64px; height: 64px; object-fit: cover; border-radius: 8px; border: 1px solid var(--line); cursor: zoom-in; }
 .mimg-del { position: absolute; top: -7px; right: -7px; width: 18px; height: 18px; padding: 0; border: none; border-radius: 50%; background: var(--danger); color: #fff; font-size: 12px; line-height: 1; cursor: pointer; opacity: 0; transition: opacity 0.15s; }
@@ -243,10 +250,8 @@ input[type="checkbox"], input[type="radio"] { accent-color: var(--primary); }
   /* Milestones: the title drops to its own full-width line so long CJK text
      stops wrapping a few characters at a time; hover-only buttons become
      permanently visible because touch devices have no hover. */
-  #milestone-list > div .flex { flex-wrap: wrap; }
-  #milestone-list > div .flex > .flex-1 { flex: 1 1 100%; order: 10; margin-top: 3px; }
-  #milestone-list > div .flex > .opacity-0 { opacity: 1; }
-  #milestone-list .mimg-strip { padding-left: 0; }
+  /* Touch has no hover: action buttons stay permanently visible. */
+  #milestone-list .milestone-block .opacity-0 { opacity: 1; }
   #milestone-list .mimg-del { opacity: 1; }
   #milestone-list form { flex-wrap: wrap; }
   #milestone-list form > textarea { flex: 1 1 100%; order: 10; margin-top: 6px; }
