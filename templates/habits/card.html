@@ -1,10 +1,10 @@
 <div class="glass-card p-4" id="habit-{{ habit.id }}">
     <div class="flex items-center justify-between">
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-3 min-w-0">
             <a href="/habits/{{ habit.id }}" class="habit-badge hb-g{{ habit.badge_style or (habit.id % 8 + 1) }} hover:scale-110 transition-transform inline-block">
                 {{ habit.icon }}
             </a>
-            <div>
+            <div class="min-w-0">
                 <a href="/habits/{{ habit.id }}" class="text-sm font-medium hover:accent-text" style="color: var(--text-primary)">{{ habit.name }}</a>
                 <div class="flex items-center gap-2 text-xs" style="color: var(--text-muted)">
                     {% if streak > 0 %}
@@ -15,38 +15,20 @@
                 </div>
             </div>
         </div>
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-2 flex-shrink-0">
             {% if checkin %}
-                <div class="text-right">
-                    <div class="flex items-center gap-1">
-                        <span class="text-xs px-2 py-1 rounded inline-flex items-center gap-1" style="background: var(--success-bg); color: var(--success);">
-                            <span>&#10003;</span>
-                            <span>{{ checkin.created_at.strftime('%H:%M') if checkin.created_at else t('habits.checked') }}</span>
-                        </span>
-                        <button hx-delete="/api/checkins/{{ checkin.id }}"
-                                hx-target="#habit-{{ habit.id }}"
-                                hx-swap="outerHTML"
-                                class="text-xs transition-colors"
-                                style="color: var(--text-muted)"
-                                title="{{ t('habits.undo_title') }}">{{ t('habits.undo') }}</button>
-                    </div>
-                    {% if checkin.note %}
-                        <p class="text-xs mt-1 max-w-[200px] truncate" style="color: var(--text-muted)" title="{{ checkin.note }}">{{ checkin.note }}</p>
-                    {% endif %}
+                <div class="flex items-center gap-1">
+                    <span class="text-xs px-2 py-1 rounded inline-flex items-center gap-1" style="background: var(--success-bg); color: var(--success);">
+                        <span>&#10003;</span>
+                        <span>{{ checkin.created_at.strftime('%H:%M') if checkin.created_at else t('habits.checked') }}</span>
+                    </span>
+                    <button hx-delete="/api/checkins/{{ checkin.id }}"
+                            hx-target="#habit-{{ habit.id }}"
+                            hx-swap="outerHTML"
+                            class="text-xs transition-colors"
+                            style="color: var(--text-muted)"
+                            title="{{ t('habits.undo_title') }}">{{ t('habits.undo') }}</button>
                 </div>
-            {% else %}
-                <form hx-post="/api/checkins/{{ habit.id }}"
-                      hx-target="#habit-{{ habit.id }}"
-                      hx-swap="outerHTML"
-                      class="flex items-center gap-1">
-                    <input type="text" name="note" maxlength="200"
-                           class="w-28 px-2 py-1 border rounded text-xs outline-none"
-                           style="border-color: #e2e8f0; background: rgba(255,255,255,0.5);"
-                           placeholder="{{ t('habits.note_ph') }}">
-                    <button type="submit" class="btn-primary text-xs whitespace-nowrap">
-                        {{ t('habits.checkin') }}
-                    </button>
-                </form>
             {% endif %}
             <div class="relative" x-data="{ open: false }">
                 <button @click="open = !open" class="text-sm px-1" style="color: var(--text-muted)">&#8943;</button>
@@ -59,9 +41,28 @@
                             hx-target="#habit-{{ habit.id }}"
                             hx-swap="outerHTML"
                             class="block w-full text-left px-3 py-1.5 text-xs transition-colors"
-                            style="color: #dc2626;">{{ t('delete') }}</button>
+                            style="color: var(--danger);">{{ t('delete') }}</button>
                 </div>
             </div>
         </div>
     </div>
+
+    {% if checkin and checkin.note %}
+        <p class="text-xs mt-2 ml-[50px] max-w-[530px]" style="color: var(--text-secondary); white-space: pre-line;">{{ checkin.note }}</p>
+    {% else %}
+        <form hx-post="/api/checkins/{{ habit.id }}"
+              hx-target="#habit-{{ habit.id }}"
+              hx-swap="outerHTML"
+              class="flex items-start gap-2 mt-3 ml-[50px] max-w-[530px]">
+            <textarea name="note" rows="1" maxlength="200"
+                      placeholder="{{ t('habits.note_ph') }}"
+                      class="text-xs px-2 py-1.5 border rounded flex-1 min-w-0 outline-none"
+                      style="border-color: var(--muted-border); background: var(--input-bg); color: var(--text-primary); resize: none; overflow: hidden;"
+                      x-init="$el.style.height='auto'; $el.style.height=$el.scrollHeight+'px'"
+                      @input="$el.style.height='auto'; $el.style.height=$el.scrollHeight+'px'"></textarea>
+            <button type="submit" class="btn-primary text-xs whitespace-nowrap">
+                {{ t('habits.checkin') }}
+            </button>
+        </form>
+    {% endif %}
 </div>
