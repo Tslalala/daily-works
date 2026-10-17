@@ -51,13 +51,13 @@
         {# Checked in today: only the note (if any) belongs on the second row;
            the check-in form must not appear alongside the status. #}
         {% if checkin.note %}
-        <p class="text-xs mt-2 ml-[50px] max-w-[530px]" style="color: var(--text-secondary); white-space: pre-line;">{{ checkin.note }}</p>
+        <p class="text-xs mt-2 ml-[50px]" style="color: var(--text-secondary); white-space: pre-line;">{{ checkin.note }}</p>
         {% endif %}
     {% else %}
         <form hx-post="/api/checkins/{{ habit.id }}"
               hx-target="#habit-{{ habit.id }}"
               hx-swap="outerHTML"
-              class="flex items-start gap-2 mt-3 ml-[50px] max-w-[530px]">
+              class="flex items-start gap-2 mt-3 ml-[50px]">
             <textarea name="note" rows="1" maxlength="200"
                       placeholder="{{ t('habits.note_ph') }}"
                       class="text-xs px-2 py-1.5 border rounded flex-1 min-w-0 outline-none"
