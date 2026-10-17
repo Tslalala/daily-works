@@ -13,7 +13,6 @@
     <form class="mimg-upload" hx-post="/api/milestones/{{ m.id }}/images"
           hx-target="#mimg-{{ m.id }}" hx-swap="innerHTML"
           hx-encoding="multipart/form-data">
-        <label class="mimg-add" for="mimg-file-{{ m.id }}" title="{{ t('targets.add_image') }}">+</label>
         <input type="file" id="mimg-file-{{ m.id }}" name="files"
                accept="image/jpeg,image/png,image/webp,image/gif" multiple hidden>
     </form>

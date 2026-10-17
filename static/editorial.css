@@ -204,8 +204,6 @@ input[type="checkbox"], input[type="radio"] { accent-color: var(--primary); }
 .mimg-thumb { display: block; width: 64px; height: 64px; object-fit: cover; border-radius: 8px; border: 1px solid var(--line); cursor: zoom-in; }
 .mimg-del { position: absolute; top: -7px; right: -7px; width: 18px; height: 18px; padding: 0; border: none; border-radius: 50%; background: var(--danger); color: #fff; font-size: 12px; line-height: 1; cursor: pointer; opacity: 0; transition: opacity 0.15s; }
 .mimg-item:hover .mimg-del { opacity: 1; }
-.mimg-add { display: inline-flex; align-items: center; justify-content: center; width: 64px; height: 64px; border-radius: 8px; border: 1px dashed var(--muted-border); background: var(--chip-muted-bg); color: var(--text-muted); font-size: 22px; line-height: 1; cursor: pointer; user-select: none; }
-.mimg-add:hover { color: var(--primary); border-color: var(--primary); }
 .img-lightbox { position: fixed; inset: 0; z-index: 90; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.72); cursor: zoom-out; padding: 24px; }
 .img-lightbox img { max-width: 100%; max-height: 100%; border-radius: 10px; box-shadow: 0 12px 48px rgba(0,0,0,0.4); }
 @media (max-width: 700px) {
