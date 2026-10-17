@@ -206,6 +206,18 @@ input[type="checkbox"], input[type="radio"] { accent-color: var(--primary); }
 .mimg-item:hover .mimg-del { opacity: 1; }
 .img-lightbox { position: fixed; inset: 0; z-index: 90; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.72); cursor: zoom-out; padding: 24px; }
 .img-lightbox img { max-width: 100%; max-height: 100%; border-radius: 10px; box-shadow: 0 12px 48px rgba(0,0,0,0.4); }
+
+/* Rendered markdown inside milestone titles */
+.md-body p { margin: 0; }
+.md-body ul, .md-body ol { margin: 2px 0; padding-left: 1.4em; }
+.md-body ul { list-style: disc; }
+.md-body ol { list-style: decimal; }
+.md-body li { margin: 1px 0; }
+.md-body code { font-family: Consolas, 'Courier New', monospace; font-size: 0.9em; background: var(--chip-muted-bg); padding: 1px 4px; border-radius: 4px; }
+.md-body a { color: var(--primary); text-decoration: underline; }
+.md-body strong { color: var(--text-primary); }
+.md-body h1, .md-body h2, .md-body h3 { font-size: inherit; font-weight: 700; margin: 2px 0; }
+.md-body blockquote { margin: 4px 0; padding-left: 10px; border-left: 2px solid var(--line); color: var(--text-secondary); }
 @media (max-width: 700px) {
   .site-nav > div > div { height: 64px; }
   .site-nav .text-sm[style] { display: none; }

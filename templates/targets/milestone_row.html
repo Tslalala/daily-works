@@ -12,7 +12,7 @@
         {% else %}
             <span class="text-xs w-20 flex-shrink-0" style="color: var(--text-muted);">--</span>
         {% endif %}
-        <span class="flex-1 min-w-0" style="white-space: pre-line; word-break: break-word;">{{ m.title }}</span>
+        <span class="flex-1 min-w-0 md-body" data-md style="word-break: break-word;">{{ m.title }}</span>
         <label class="text-xs px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
                for="mimg-file-{{ m.id }}"
                style="background: var(--chip-muted-bg); color: var(--text-secondary);"
