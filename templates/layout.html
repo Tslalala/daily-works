@@ -400,6 +400,34 @@
                 }).then(function() { location.reload(); });
             });
         })();
+
+        // Image lightbox: any element with data-full opens the overlay.
+        (function() {
+            function close() {
+                var lb = document.getElementById('img-lightbox');
+                if (!lb) return;
+                lb.style.display = 'none';
+                document.getElementById('img-lightbox-img').src = '';
+            }
+            document.addEventListener('click', function(e) {
+                var t = e.target.closest('[data-full]');
+                if (t) {
+                    var lb = document.getElementById('img-lightbox');
+                    if (!lb) return;
+                    document.getElementById('img-lightbox-img').src = t.getAttribute('data-full');
+                    lb.style.display = 'flex';
+                    e.preventDefault();
+                    return;
+                }
+                if (e.target.closest('#img-lightbox')) close();
+            });
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') close();
+            });
+        })();
     </script>
+    <div id="img-lightbox" class="img-lightbox" style="display:none;">
+        <img id="img-lightbox-img" src="" alt="">
+    </div>
 </body>
 </html>

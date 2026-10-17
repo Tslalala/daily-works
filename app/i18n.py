@@ -21,6 +21,7 @@ MESSAGES = {
         "confirm.target": "确定删除这个目标吗？",
         "confirm.habit": "确定删除这个习惯吗？",
         "confirm.milestone": "确定删除此里程碑？",
+        "confirm.image": "确定删除这张图片吗？",
         "targets.not_found": "目标不存在",
         "habits.not_found": "习惯不存在",
         # --- nav ---
@@ -151,6 +152,7 @@ MESSAGES = {
         "targets.drag": "拖动排序",
         "targets.progress": "进度",
         "targets.milestones": "里程碑",
+        "targets.add_image": "加图片",
         "targets.add_milestone": "添加里程碑",
         "targets.milestone_name": "里程碑名称",
         "targets.description": "描述",
@@ -322,6 +324,7 @@ MESSAGES = {
         "confirm.target": "Delete this target?",
         "confirm.habit": "Delete this habit?",
         "confirm.milestone": "Delete this milestone?",
+        "confirm.image": "Delete this photo?",
         "targets.not_found": "Target not found",
         "habits.not_found": "Habit not found",
         # --- nav ---
@@ -452,6 +455,7 @@ MESSAGES = {
         "targets.drag": "Drag to reorder",
         "targets.progress": "Progress",
         "targets.milestones": "Milestones",
+        "targets.add_image": "Add photo",
         "targets.add_milestone": "Add milestone",
         "targets.milestone_name": "Milestone name",
         "targets.description": "Description",

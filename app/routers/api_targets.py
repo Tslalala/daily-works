@@ -1,8 +1,9 @@
 """Target API endpoints."""
 import json
+from typing import List
 
-from fastapi import APIRouter, Depends, Request
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi import APIRouter, Depends, File, Request, UploadFile
+from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse
 from sqlalchemy.orm import Session
 
 from app.auth import get_current_user
@@ -14,9 +15,12 @@ from app.services.activity_service import log_action, remove_milestone_completio
 from app.services.target_service import (
     complete_target, create_target, create_milestone, delete_milestone, delete_target,
     uncomplete_target,
-    delete_today_contribution, get_contribution, get_target, get_today_contribution,
-    list_recent_contributions, list_targets, recalculate_milestone_progress, reorder_targets,
-    save_contribution, toggle_milestone, update_milestone, update_progress, update_target,
+    delete_milestone_image, delete_today_contribution, get_contribution, get_target,
+    get_owned_milestone_image, get_today_contribution,
+    list_recent_contributions, list_targets, milestone_image_path, recalculate_milestone_progress,
+    reorder_targets,
+    save_contribution, store_milestone_image, toggle_milestone, update_milestone, update_progress,
+    update_target,
 )
 from app.templates import templates
 from datetime import datetime
@@ -231,6 +235,72 @@ async def api_add_milestone(request: Request, target_id: int, db: Session = Depe
         list_html + heading_html + progress_html + form_html,
         headers={"HX-Trigger": json.dumps({"show-toast": {"message": tt(request, "toast.milestone_added"), "type": "success"}})}
     )
+
+
+def _owned_milestone_or_none(db: Session, user: User, milestone_id: int):
+    m = db.query(TargetMilestone).filter(TargetMilestone.id == milestone_id).first()
+    if not m or m.target.user_id != user.id:
+        return None
+    return m
+
+
+def _milestone_images_html(request: Request, m) -> HTMLResponse:
+    return HTMLResponse(
+        templates.get_template("targets/milestone_images.html").render(
+            {"request": request, "m": m, "lang": get_lang(request)}
+        )
+    )
+
+
+@router.post("/milestones/{milestone_id}/images", response_class=HTMLResponse)
+async def api_add_milestone_images(
+    request: Request,
+    milestone_id: int,
+    files: List[UploadFile] = File(...),
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    m = _owned_milestone_or_none(db, user, milestone_id)
+    if not m:
+        return HTMLResponse("Milestone not found", status_code=404)
+    try:
+        for f in files:
+            if f.filename:
+                store_milestone_image(db, user.id, m, f)
+    except ValueError:
+        return HTMLResponse("", status_code=400)
+    return _milestone_images_html(request, m)
+
+
+@router.delete("/milestones/{milestone_id}/images/{image_id}", response_class=HTMLResponse)
+async def api_delete_milestone_image(
+    request: Request,
+    milestone_id: int,
+    image_id: int,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    if not delete_milestone_image(db, user.id, image_id):
+        return HTMLResponse("", status_code=404)
+    m = _owned_milestone_or_none(db, user, milestone_id)
+    if not m:
+        return HTMLResponse("", status_code=404)
+    return _milestone_images_html(request, m)
+
+
+@router.get("/milestone-images/{image_id}")
+async def api_serve_milestone_image(
+    image_id: int,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    img = get_owned_milestone_image(db, user.id, image_id)
+    if not img:
+        return HTMLResponse("", status_code=404)
+    p = milestone_image_path(img)
+    if not p.exists():
+        return HTMLResponse("", status_code=404)
+    return FileResponse(str(p), media_type=img.content_type)
 
 
 @router.post("/targets/{target_id}/contribution", response_class=HTMLResponse)

@@ -12,7 +12,7 @@ class Base(DeclarativeBase):
 
 
 def init_db():
-    from app.models import target, habit, daily_log, activity_log, user, session, work_clockin  # noqa: F401
+    from app.models import target, habit, daily_log, activity_log, user, session, work_clockin, milestone_image  # noqa: F401
     Base.metadata.create_all(bind=engine)
 
     inspector = inspect(engine)

@@ -41,6 +41,7 @@ class TargetMilestone(Base):
     sort_order = Column(Integer, default=0)
 
     target = relationship("Target", back_populates="milestones")
+    images = relationship("MilestoneImage", back_populates="milestone", cascade="all, delete-orphan")
 
 
 class TargetContribution(Base):

@@ -1,11 +1,98 @@
 import random
+import uuid
 from datetime import date, datetime
+from pathlib import Path
 from typing import List, Optional
 
 from sqlalchemy.orm import Session
 
+from app.models.milestone_image import MilestoneImage
 from app.models.target import Target, TargetContribution, TargetMilestone
 from app.schemas.target_schema import TargetCreate, TargetUpdate
+
+UPLOAD_ROOT = Path(__file__).resolve().parent.parent.parent / "uploads"
+MAX_IMAGE_BYTES = 8 * 1024 * 1024
+ALLOWED_IMAGE_EXT = {
+    ".jpg": "image/jpeg",
+    ".jpeg": "image/jpeg",
+    ".png": "image/png",
+    ".webp": "image/webp",
+    ".gif": "image/gif",
+}
+
+
+def list_milestone_images(db: Session, milestone_id: int) -> List[MilestoneImage]:
+    return (
+        db.query(MilestoneImage)
+        .filter(MilestoneImage.milestone_id == milestone_id)
+        .order_by(MilestoneImage.id)
+        .all()
+    )
+
+
+def get_owned_milestone_image(db: Session, user_id: int, image_id: int) -> Optional[MilestoneImage]:
+    img = db.query(MilestoneImage).filter(MilestoneImage.id == image_id).first()
+    if not img or img.milestone.target.user_id != user_id:
+        return None
+    return img
+
+
+def milestone_image_path(img: MilestoneImage) -> Path:
+    return UPLOAD_ROOT / img.filename
+
+
+def store_milestone_image(db: Session, user_id: int, milestone: TargetMilestone, file) -> MilestoneImage:
+    """Persist one uploaded file (a FastAPI UploadFile). Raises ValueError on
+    unsupported type or size overflow."""
+    ext = Path(file.filename or "").suffix.lower()
+    content_type = ALLOWED_IMAGE_EXT.get(ext)
+    if content_type is None:
+        raise ValueError("unsupported image type")
+    data = file.file.read(MAX_IMAGE_BYTES + 1)
+    if len(data) > MAX_IMAGE_BYTES:
+        raise ValueError("image too large")
+    sub = UPLOAD_ROOT / f"user_{user_id}"
+    sub.mkdir(parents=True, exist_ok=True)
+    name = f"{uuid.uuid4().hex}{ext}"
+    (sub / name).write_bytes(data)
+    img = MilestoneImage(
+        milestone_id=milestone.id,
+        filename=f"user_{user_id}/{name}",
+        content_type=content_type,
+        size=len(data),
+    )
+    db.add(img)
+    db.commit()
+    db.refresh(img)
+    return img
+
+
+def _purge_milestone_image_files(db: Session, milestone_id: int) -> None:
+    imgs = db.query(MilestoneImage).filter(MilestoneImage.milestone_id == milestone_id).all()
+    for img in imgs:
+        p = milestone_image_path(img)
+        db.delete(img)
+        try:
+            if p.exists():
+                p.unlink()
+        except OSError:
+            pass
+    db.commit()
+
+
+def delete_milestone_image(db: Session, user_id: int, image_id: int) -> bool:
+    img = get_owned_milestone_image(db, user_id, image_id)
+    if not img:
+        return False
+    p = milestone_image_path(img)
+    db.delete(img)
+    db.commit()
+    try:
+        if p.exists():
+            p.unlink()
+    except OSError:
+        pass
+    return True
 
 
 def list_targets(db: Session, user_id: int, target_type: Optional[str] = None, status: Optional[str] = None) -> List[Target]:
@@ -50,6 +137,8 @@ def delete_target(db: Session, user_id: int, target_id: int) -> bool:
     t = get_target(db, user_id, target_id)
     if not t:
         return False
+    for m in list(t.milestones):
+        _purge_milestone_image_files(db, m.id)
     db.delete(t)
     db.commit()
     return True
@@ -217,6 +306,7 @@ def delete_milestone(db: Session, user_id: int, milestone_id: int) -> bool:
     m = _get_owned_milestone(db, user_id, milestone_id)
     if not m:
         return False
+    _purge_milestone_image_files(db, milestone_id)
     db.delete(m)
     db.commit()
     return True
