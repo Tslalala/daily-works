@@ -47,8 +47,12 @@
         </div>
     </div>
 
-    {% if checkin and checkin.note %}
+    {% if checkin %}
+        {# Checked in today: only the note (if any) belongs on the second row;
+           the check-in form must not appear alongside the status. #}
+        {% if checkin.note %}
         <p class="text-xs mt-2 ml-[50px] max-w-[530px]" style="color: var(--text-secondary); white-space: pre-line;">{{ checkin.note }}</p>
+        {% endif %}
     {% else %}
         <form hx-post="/api/checkins/{{ habit.id }}"
               hx-target="#habit-{{ habit.id }}"
