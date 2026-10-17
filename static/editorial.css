@@ -201,7 +201,9 @@ input[type="checkbox"], input[type="radio"] { accent-color: var(--primary); }
 /* Milestone row layout (all viewports): row 1 = checkbox + date, action
    buttons pinned to the right of that row (ml-auto on the first one);
    the title drops to its own full-width line. Scoped to .milestone-block
-   so the inline edit form (no such class) is not affected. */
+   so the inline edit form (no such class) is not affected. The side
+   padding narrows the text column so long CJK titles stay readable. */
+#milestone-list .milestone-block { padding: 0 20px; }
 #milestone-list .milestone-block > .flex { flex-wrap: wrap; }
 #milestone-list .milestone-block > .flex > .flex-1 { flex: 1 1 100%; order: 10; margin-top: 3px; }
 
@@ -250,7 +252,9 @@ input[type="checkbox"], input[type="radio"] { accent-color: var(--primary); }
   /* Milestones: the title drops to its own full-width line so long CJK text
      stops wrapping a few characters at a time; hover-only buttons become
      permanently visible because touch devices have no hover. */
-  /* Touch has no hover: action buttons stay permanently visible. */
+  /* Touch has no hover: action buttons stay permanently visible. The card
+     is already narrow, so drop the desktop text-column inset. */
+  #milestone-list .milestone-block { padding-left: 0; padding-right: 0; }
   #milestone-list .milestone-block .opacity-0 { opacity: 1; }
   #milestone-list .mimg-del { opacity: 1; }
   #milestone-list form { flex-wrap: wrap; }
